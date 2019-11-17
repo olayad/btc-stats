@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from pathlib import Path
