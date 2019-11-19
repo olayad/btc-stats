@@ -1,33 +1,29 @@
 #!/usr/bin/env python3
 
 import pandas as pd
-from tools import get_price, update_loan_ratios
+from datetime import datetime, timedelta
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
-from datetime import datetime, timedelta
-import loan
+from tools import get_price, update_loan_ratios
+from loan import get_loans
+
 
 app = dash.Dash()
 
 loans = get_loans()
+print()
+for cdp in loans:
+    print(cdp)
 
-try:
-    df_cdp = pd.read_csv('./data/loans.csv')
-    df_btcusd = pd.read_csv('./data/btcusd.csv')
-except FileNotFoundError:
-    print('ERROR - File not found, exiting program')
-    exit(1)
 
-df_cdp.set_index('num', inplace=True)
-df_btcusd['Date'] = pd.to_datetime(df_btcusd['Date'])
-df_btcusd['Last'] = pd.to_numeric(df_btcusd['Last'])
-print(df_btcusd.head())
-print(df_cdp.head())
 
 exit(1)
+
+
+
 
 
 
