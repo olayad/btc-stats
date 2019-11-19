@@ -14,9 +14,9 @@ from loan import get_loans
 app = dash.Dash()
 
 loans = get_loans()
-print()
-for cdp in loans:
-    print(cdp)
+# print()
+# for cdp in loans:
+#     print(cdp)
 
 
 
