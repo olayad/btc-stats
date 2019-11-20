@@ -1,5 +1,6 @@
 import pandas as pd
 import datetime
+from tools import get_cad_price
 
 class Loan:
     counter = 1
@@ -19,10 +20,20 @@ class Loan:
 
     def generate_stats(self):
         if Loan.df_btcusd is None:
-            load_price_data()
-        self.calculate_ratios()
+            load_price_data() #TODO: this should be outside of class function
 
+        self.calculate_ratios() #TODO: this should be taken outside of class and pass loan as param
 
+    def load_price_data(self):
+        global df_btcusd
+        try:
+            df_btcusd = pd.read_csv('./data/btcusd.csv')
+        except FileNotFoundError:
+            print('[Error] File [/data/btcusd.csv] not found, terminating program')
+            exit(1)
+        df_btcusd['Date'] = pd.to_datetime(df_btcusd['Date'])
+        df_btcusd['Last'] = pd.to_numeric(df_btcusd['Last'])
+        usdcad_fx_rate = tools.get_cadusd_rate(self.start_date)
 
     def calculate_ratios(self):
         global df_btcusd
@@ -46,6 +57,7 @@ class Loan:
         print('self.ratios:\n', self.stats)
 
 
+
     def __str__(self):
         return 'Loan_id:{:0>2d}, amount:${:6d}, ' \
                'collateral_amount:{}, start_date:{} '.format(self.id,
@@ -53,16 +65,6 @@ class Loan:
                                                              self.coll_amount,
                                                              self.start_date)
 
-
-def load_price_data():
-    global df_btcusd
-    try:
-        df_btcusd = pd.read_csv('./data/btcusd.csv')
-    except FileNotFoundError:
-        print('[Error] File [/data/btcusd.csv] not found, terminating program')
-        exit(1)
-    df_btcusd['Date'] = pd.to_datetime(df_btcusd['Date'])
-    df_btcusd['Last'] = pd.to_numeric(df_btcusd['Last'])
 
 
 def load_loans():
@@ -82,7 +84,7 @@ def load_loans():
                    row['coll_amount'])
         Loan.active_loans.append(cdp)
 
-        # REMOVE HOOK
+        #TODO: REMOVE HOOK
         if cdp.id == 7:
             cdp.generate_stats()
 

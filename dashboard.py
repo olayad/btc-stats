@@ -14,19 +14,8 @@ from loan import get_loans
 app = dash.Dash()
 
 loans = get_loans()
-# print()
-# for cdp in loans:
-#     print(cdp)
-
-
 
 exit(1)
-
-
-
-
-
-
 
 
 
@@ -60,18 +49,18 @@ app.layout = html.Div([
               [Input('update_interval', 'n_intervals')])
 def update_stats(n_intervals):
     global df_cdp
-    price = get_price()
-    df_cdp['coll_ratio'] = update_loan_ratios(df_cdp, price)
-    return 'BTC: '+str(price['USD'])+' USD - '+str(price['CAD'])+' CAD'
+
+    # TODO: Need to fix below, price functions were separated
+    # price = get_price()
+    # df_cdp['coll_ratio'] = update_loan_ratios(df_cdp, price)
+    # return 'BTC: '+str(price['USD'])+' USD - '+str(price['CAD'])+' CAD'
+    return 'BTC: price is wakawaka'
 
 @app.callback(Output('ratio_graph', 'figure'),
               [Input('days_dropbox', 'days')])
 def update_graph(n_days):
     global df_btcusd
     global df_cdp
-    print(df_cdp.head())
-    print(df_btcusd.head())
-    print('value:{}'.format(value))
     data = []
     start_date = (datetime.today() - timedelta(days=n_days)).date()
 
