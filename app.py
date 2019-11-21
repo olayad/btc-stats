@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import pandas as pd
 from datetime import datetime, timedelta
 import dash
@@ -7,13 +6,18 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
-from tools import get_price, update_loan_ratios
+from tools import get_price
+
 from loan import get_loans
+
 
 
 app = dash.Dash()
 
 loans = get_loans()
+
+for cdp in loans:
+    print(cdp)
 
 exit(1)
 
