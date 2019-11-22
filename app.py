@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import pandas as pd
+
 from datetime import datetime, timedelta
 import dash
 import dash_html_components as html
@@ -7,28 +7,20 @@ import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 from loan import get_loans
-from exceptions import ExchangeRateDataNotFound, LoanDataNotFound, \
-    BitfinexApiUnavailable, BankOfCanadaApiUnavailable, QuandlApiUnavailable
+from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable
 import sys
 
 
 try:
     loans = get_loans()
-except ExchangeRateDataNotFound:
-    print('[ERROR] Could not find file [/data/btcusd.csv], terminating program.')
+except InitializationDataNotFound:
+    print('[ERROR] Validate \'loan.csv\' and \'btcusd.csv\' files are avaialble' +
+          ' in \'/data/\' dir. Terminating execution.')
     sys.exit(1)
-except LoanDataNotFound:
-    print('[ERROR] Could not find file [/data/loan.csv], terminating program.')
+except ThirdPartyApiUnavailable:
+    print('[ERROR] Third party API not responding, try again later. Terminating execution.')
     sys.exit(1)
-except BitfinexApiUnavailable:
-    print('[ERROR] Bitfinex API seems down, terminating program.')
-    sys.exit(1)
-except BankOfCanadaApiUnavailable:
-    print('[ERROR] Bank of Canada API seems down, terminating program.')
-    sys.exit(1)
-except QuandlApiUnavailable:
-    print('[ERROR] Quandl API seems down, terminating program.')
-    sys.exit(1)
+
 
 
 for cdp in loans:

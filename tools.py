@@ -1,13 +1,21 @@
 import requests
 import json
 import sys
-from exceptions import BitfinexApiUnavailable, BankOfCanadaApiUnavailable,\
-    QuandlApiUnavailable
+from exceptions import ThirdPartyApiUnavailable
 
 
+quandl_url = 'https://www.quandl.com/api/v3/datasets/BITFINEX/BTCUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
 bitfinex_url = 'https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD'
 bankofcanada_url = 'https://www.bankofcanada.ca/valet/observations/FXCADUSD/json?start_date='
 
+
+def update_btcusd_data():
+    try:
+        data = requests.get(quandl_url, timeout=2)
+    except requests.exceptions.Timeout:
+        print('[ERROR] Quandl API not responding.')
+        raise ThirdPartyApiUnavailable
+    open('./data/btcusd.csv', 'wb+').write(data.content)
 
 def get_price():
     price = {}
@@ -20,9 +28,10 @@ def get_price():
 def call_exchange_api():
     response = None
     try:
-        response = requests.get(bitfinex_url)
+        response = requests.get(bitfinex_url, timeout=2)
     except requests.exceptions.Timeout:
-        raise BitfinexApiUnavailable
+        print('[ERROR] Bitfinex API not responding.')
+        raise ThirdPartyApiUnavailable
     return json.loads(response.text)[0][1]
 
 
@@ -35,10 +44,12 @@ def get_cadusd_rates(start_date):
 def call_fx_api(start_date):
     response = None
     try:
-        response = requests.get(bankofcanada_url+start_date, timeout=1)
+        response = requests.get(bankofcanada_url+start_date, timeout=2)
     except requests.exceptions.Timeout:
-        raise BankOfCanadaApiUnavailable
+        print('[ERROR] Bank of Canada API not responding.')
+        raise ThirdPartyApiUnavailable
     return json.loads(response.text)
+
 
 def fill_missing_weekend_rates(data):
     # Bitcoin never closes its branch, so need to make up for banks missing data

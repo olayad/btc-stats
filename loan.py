@@ -1,8 +1,9 @@
-#!/usr/bin/venv/ python3
+#!/usr/bin/env/ python3
 import pandas as pd
 import datetime
-from tools import get_cadusd_rates
-from exceptions import LoanDataNotFound, ExchangeRateDataNotFound
+import tools
+from exceptions import InitializationDataNotFound
+
 
 class Loan:
     counter = 1
@@ -27,7 +28,7 @@ class Loan:
         date = pd.Timestamp(self.start_date)
         self.stats['date'] = self.df_btcusd[self.df_btcusd['Date'] >= date]['Date']
         self.stats['price'] = self.df_btcusd[self.df_btcusd['Date'] >= date]['Last']
-        rates = get_cadusd_rates(str(self.start_date))
+        rates = tools.get_cadusd_rates(str(self.start_date))
         print('self.stats:')
         print(self.stats)
         print('self.rates:')
@@ -68,6 +69,7 @@ def get_loans():
 def init_loans():
     Loan.active_loans = []
     load_loans_data()
+    tools.update_btcusd_data()
     load_price_data()
     create_loan_instances()
 
@@ -76,14 +78,17 @@ def load_loans_data():
     try:
         Loan.df_loans = pd.read_csv('./data/loans.csv')
     except FileNotFoundError:
-        raise LoanDataNotFound
+        print('[ERROR] Could not find file [/data/loan.csv].')
+        raise InitializationDataNotFound
     Loan.df_loans.set_index('num', inplace=True)
+
 
 def load_price_data():
     try:
         Loan.df_btcusd = pd.read_csv('./data/btcusd.csv')
     except FileNotFoundError:
-        raise ExchangeRateDataNotFound
+        print('[ERROR] Could not find file [/data/btcusd.csv].')
+        raise InitializationDataNotFound
     Loan.df_btcusd['Date'] = pd.to_datetime(Loan.df_btcusd['Date'])
     Loan.df_btcusd['Last'] = pd.to_numeric(Loan.df_btcusd['Last'])
 
