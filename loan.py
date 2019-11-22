@@ -24,15 +24,13 @@ class Loan:
         print(self.df_btcusd.head())
         print(self.df_loans.head())
 
-        print('\n\n### Rows greater than start date ###', self.start_date)
+        print('### Calculating loan_stats ###')
+        print('### Rows greater than start date ###', self.start_date)
         date = pd.Timestamp(self.start_date)
         self.stats['date'] = self.df_btcusd[self.df_btcusd['Date'] >= date]['Date']
         self.stats['price'] = self.df_btcusd[self.df_btcusd['Date'] >= date]['Last']
         rates = tools.get_cadusd_rates(str(self.start_date))
-        print('self.stats:')
-        print(self.stats)
-        print('self.rates:')
-        print(rates)
+
 
         # self.calculate_ratios()
 

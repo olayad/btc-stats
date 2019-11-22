@@ -23,8 +23,8 @@ except ThirdPartyApiUnavailable:
 
 
 
-for cdp in loans:
-    print(cdp)
+# for cdp in loans:
+#     print(cdp)
 
 exit(0)
 
