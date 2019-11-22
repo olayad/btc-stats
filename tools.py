@@ -1,6 +1,7 @@
 import requests
 import json
 import sys
+from exceptions import ThirdPartyApiUnavailable
 
 def get_price():
     price = {}
@@ -18,7 +19,7 @@ def call_exchange_api():
     try:
         response = requests.get(bitfinex_url)
     except TimeoutError as ex:
-        print('Bitfinex API unavailable, try again later.', ex)
+        print('[ERROR] Bitfinex API unavailable, terminating program.', ex)
         # TODO: show user message error before terminating program
         sys.exit(1)
     return json.loads(response.text)[0][1]
@@ -26,7 +27,7 @@ def call_exchange_api():
 
 def get_cadusd_rates(start_date):
     json_response = call_fx_api(start_date)
-    fill_rates_weekend_data(json_response)
+    fill_missing_weekend_rates(json_response)
     return [i['FXCADUSD']['v'] for i in json_response['observations']]
 
 
@@ -36,11 +37,12 @@ def call_fx_api(start_date):
     try:
         response = requests.get(bankofcanada_url, timeout=1)
     except TimeoutError as ex:
-        print("Bank of Canada API unavailable, try again later.", ex)
+        print("[ERROR] Bank of Canada API unavailable, terminating program.", ex)
+        # TODO: show user message error before terminating program
         sys.exit(1)
     return json.loads(response.text)
 
-def fill_rates_weekend_data(data):
+def fill_missing_weekend_rates(data):
     # Bitcoin never closes its branch, so need to make up for banks missing data
     print(data['observations'])
     for i in data['observations']:

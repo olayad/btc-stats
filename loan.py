@@ -2,7 +2,7 @@
 import pandas as pd
 import datetime
 from tools import get_cadusd_rates
-
+from exceptions import LoanDataNotFound, ExchangeRateDataNotFound
 
 class Loan:
     counter = 1
@@ -60,7 +60,7 @@ class Loan:
 
 def get_loans():
     if Loan.active_loans is None:
-        print('[INFO] get_loans - Loading loan.csv info for first time')
+        print('[INFO] Initializing loan info [loan.csv].')
         init_loans()
     return Loan.active_loans
 
@@ -76,14 +76,14 @@ def load_loans_data():
     try:
         Loan.df_loans = pd.read_csv('./data/loans.csv')
     except FileNotFoundError:
-        print('[ERROR] File [/data/loans.csv] not found.')
+        raise LoanDataNotFound
     Loan.df_loans.set_index('num', inplace=True)
 
 def load_price_data():
     try:
         Loan.df_btcusd = pd.read_csv('./data/btcusd.csv')
     except FileNotFoundError:
-        print('[Error] File [/data/btcusd.csv] not found.')
+        raise ExchangeRateDataNotFound
     Loan.df_btcusd['Date'] = pd.to_datetime(Loan.df_btcusd['Date'])
     Loan.df_btcusd['Last'] = pd.to_numeric(Loan.df_btcusd['Last'])
 

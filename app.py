@@ -6,21 +6,37 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
-from tools import get_price
-
 from loan import get_loans
-
+from exceptions import ExchangeRateDataNotFound, LoanDataNotFound, \
+    BitfinexApiUnavailable, BankOfCanadaApiUnavailable, QuandlApiUnavailable
+import sys
 
 
 app = dash.Dash()
 
-loans = get_loans()
+try:
+    loans = get_loans()
+except ExchangeRateDataNotFound:
+    print('[ERROR] Could not find file [/data/btcusd.csv], terminating program.')
+    sys.exit(1)
+except LoanDataNotFound:
+    print('[ERROR] Could not find file [/data/loan.csv], terminating program.')
+    sys.exit(1)
+except BitfinexApiUnavailable:
+    print('[ERROR] Bitfinex API seems down, terminating program.')
+    sys.exit(1)
+except BankOfCanadaApiUnavailable:
+    print('[ERROR] Bank of Canada API seems down, terminating program.')
+    sys.exit(1)
+except QuandlApiUnavailable:
+    print('[ERROR] Quandl API seems down, terminating program.')
+    sys.exit(1)
+
 
 for cdp in loans:
     print(cdp)
 
-exit(1)
-
+exit(0)
 
 
 app.layout = html.Div([
