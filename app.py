@@ -12,8 +12,6 @@ from exceptions import ExchangeRateDataNotFound, LoanDataNotFound, \
 import sys
 
 
-app = dash.Dash()
-
 try:
     loans = get_loans()
 except ExchangeRateDataNotFound:
@@ -39,6 +37,7 @@ for cdp in loans:
 exit(0)
 
 
+app = dash.Dash()
 app.layout = html.Div([
     # Price ticker
     html.H1(id='btc_price', children='BTC: USD.'),
