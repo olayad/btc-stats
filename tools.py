@@ -77,7 +77,7 @@ def fill_missing_day_rates(rates):
     start_date = datetime.datetime.strptime(rates[0]['start_date'], '%Y-%m-%d')
     end_date = datetime.datetime.strptime(rates[0]['end_date'], '%Y-%m-%d')
     requested_days = (end_date - start_date)
-    print('(fill_missing_day rates) start_date:{}, end_date:{}'.format(start_date, end_date))
+    # print('(fill_missing_day rates) start_date:{}, end_date:{}'.format(start_date, end_date))
 
     new_end_date = end_date + datetime.timedelta(days=1)
     print('new end date', new_end_date)
