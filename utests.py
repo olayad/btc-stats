@@ -6,7 +6,7 @@ import tools
 
 class TestLoanClass (unittest.TestCase):
 
-    def test_get_rates_continous_week_days(self):
+    def test_get_rates_all_week_days(self):
         resp = tools.get_cadusd_rates(start_date='2019-11-04', end_date='2019-11-08')
         self.assertEqual(len(resp), 5, 'Should be 5')
 
@@ -22,7 +22,6 @@ class TestLoanClass (unittest.TestCase):
         self.assertEqual(resp[0], tools.AVG_FXCADUSD, 'Should be equal to AVG_FXCADUSD')
 
     def test_get_rates_weekend_between(self):
-        # Nov 11th is holiday
         resp = tools.get_cadusd_rates(start_date='2019-10-28', end_date='2019-11-04')
         self.assertEqual(len(resp), 8, 'Should be 8')
 
@@ -34,7 +33,7 @@ class TestLoanClass (unittest.TestCase):
         resp = tools.get_cadusd_rates(start_date='2019-11-08', end_date='2019-11-10')
         self.assertEqual(len(resp), 3, 'Should be 3')
 
-    def test_get_rates_weekend_start(self):
+    def test_get_rates_only_weekend(self):
         resp = tools.get_cadusd_rates(start_date='2019-11-09', end_date='2019-11-10')
         self.assertEqual(len(resp), 2, 'Should be 2')
 

@@ -8,10 +8,10 @@ quandl_url = 'https://www.quandl.com/api/v3/datasets/BITFINEX/BTCUSD.csv?api_key
 bitfinex_url = 'https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD'
 bankofcanada_url = 'https://www.bankofcanada.ca/valet/observations/FXCADUSD/json?'
 
-# Update value every yearly average for CADUSD rate.
 AVG_FXCADUSD = 0.753    # Last updated Nov 23, 2019
 
-def update_btcusd_data():
+
+def update_btcusd_csv():
     try:
         data = requests.get(quandl_url, timeout=2)
     except requests.exceptions.Timeout:
@@ -61,7 +61,7 @@ def call_fx_api(start_date, end_date):
 
 
 def payload_is_not_empty(payload):
-    return (len(payload['observations']) != 0 )
+    return len(payload['observations']) != 0
 
 
 def strip_payload(payload):
@@ -84,12 +84,11 @@ def fill_missing_day_rates(rates):
     result = []
     curr = start_date
     result_has_data = False
-
     while True:
         if curr.strftime('%Y-%m-%d') in rates[1].keys():
             result.append(rates[1][curr.strftime('%Y-%m-%d')])
             result_has_data = True
-        else:  # Duplicate last observation item because Bank of Canada has no data
+        else:  # FX shows no day data, duplicate last observation or use avg.
             result.append(result[-1]) if result_has_data else result.append(AVG_FXCADUSD)
         curr = curr + datetime.timedelta(days=1)
         if curr > end_date:

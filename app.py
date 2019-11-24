@@ -6,15 +6,23 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
-from loan import get_loans
+from loan import get_loans, set_test_mode
 from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable
 import sys
+import argparse
 
+
+parser = argparse.ArgumentParser(description='CDP stats server.')
+parser.add_argument('-t', '--test', help='Specify the test suite to run')
+args = parser.parse_args()
+
+if args.test:
+    set_test_mode(args.test)
 
 try:
     loans = get_loans()
 except InitializationDataNotFound:
-    print('[ERROR] Validate \'loan.csv\' and \'btcusd.csv\' files are avaialble' +
+    print('[ERROR] Validate \'loan.csv\' and \'btcusd.csv\' files are available' +
           ' in \'/data/\' dir. Terminating execution.')
     sys.exit(1)
 except ThirdPartyApiUnavailable:
@@ -81,4 +89,6 @@ def update_graph(n_days):
 
 
 if __name__ == '__main__':
+
+
     app.run_server()
