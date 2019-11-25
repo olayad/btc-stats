@@ -26,27 +26,19 @@ class Loan:
 
 
     def calculate_loan_stats(self):
-        print(self.df_btcusd.head())
-        print(self.df_loans.head())
-
-        print('### Calculating loan_stats ###')
-        print('### Rows greater than start date ###', self.start_date)
+        print('\n### calculating loan_stats() ###')
+        print('start_date:', self.start_date)
         date = pd.Timestamp(self.start_date)
         self.stats['date'] = self.df_btcusd[self.df_btcusd['Date'] >= date]['Date']
         self.stats['price'] = self.df_btcusd[self.df_btcusd['Date'] >= date]['Last']
         # self.stats['rates'] = tools.get_cadusd_rates(str(self.start_date))
-        result = tools.get_cadusd_rates(str(self.start_date))
-        print('shape:', self.stats.shape)
-        print('result:', len(result))
+        rates = tools.get_cadusd_rates(str(self.start_date))
 
-
-        # TODO: There is a discrepancy on the number of rows that get_cadusd_rates
-        # return and the number of rows that self.stats have
-
-
-        print()
+        print('stats shape:', self.stats.shape)
         print('stats df:')
         print(self.stats)
+        print('len(rates()):', len(rates))
+        print('rates:', rates)
 
 
         sys.exit(1)
@@ -83,7 +75,6 @@ def set_test_mode(suite):
 
 def get_loans():
     if Loan.active_loans is None:
-        print('[INFO] Initializing loan info [loan.csv].')
         init_loans()
     return Loan.active_loans
 
@@ -98,13 +89,19 @@ def init_loans():
     for loan in Loan.active_loans:
         loan.calculate_loan_stats()
 
+
 def load_loans_dataframe():
     global test_mode
     df_loans = None
-    prod_path = './data/loans.csv'
-    test_path = './tests/loans'+str(test_mode)+'.csv'
     try:
-        df_loans = pd.read_csv(test_path) if test_mode else pd.read_csv(prod_path)
+        if test_mode:
+            test_path = './tests/'+str(test_mode)
+            print('[INFO] Initializing loans with file: '+test_path)
+            df_loans = pd.read_csv(test_path)
+        else:
+            prod_path = './data/loans.csv'
+            print('[INFO] Initializing loans with file: '+prod_path)
+            df_loans = pd.read_csv(prod_path)
     except FileNotFoundError:
         print('[ERROR] Could not find file [/data/loan.csv].')
         raise InitializationDataNotFound
@@ -121,6 +118,16 @@ def load_price_dataframe():
         raise InitializationDataNotFound
     df_btcusd['Date'] = pd.to_datetime(df_btcusd['Date'])
     df_btcusd['Last'] = pd.to_numeric(df_btcusd['Last'])
+    df_btcusd = append_todays_btc_price(df_btcusd)
+    return df_btcusd
+
+
+def append_todays_btc_price(df_btcusd):
+    today = datetime.datetime.strptime(str(datetime.date.today()), '%Y-%m-%d')
+    price = tools.get_usd_price()
+    new_row = pd.DataFrame({'Date': [today], 'High': ['NA'], 'Low': ['NA'], 'Mid': ['NA'],
+                            'Last': [price], 'Bid': ['NA'], 'Ask': ['NA'], 'Volume': ['NA']})
+    df_btcusd = pd.concat([new_row, df_btcusd]).reset_index(drop=True)
     return df_btcusd
 
 

@@ -13,7 +13,7 @@ import argparse
 
 
 parser = argparse.ArgumentParser(description='CDP stats server.')
-parser.add_argument('-t', '--test', help='Specify the test suite to run')
+parser.add_argument('-t', '--test', help='Specify the test suite (loans[x].csv file to run')
 args = parser.parse_args()
 
 if args.test:

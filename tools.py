@@ -19,11 +19,9 @@ def update_btcusd_csv():
         raise ThirdPartyApiUnavailable
     open('./data/btcusd.csv', 'wb+').write(data.content)
 
-def get_price():
-    price = {}
-    usd_price = call_exchange_api()
-
-    # TODO: need to fix what returns below
+def get_usd_price():
+    price = call_exchange_api()
+    print('get_usd_price():', price)
     return price
 
 
