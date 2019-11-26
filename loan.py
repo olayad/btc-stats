@@ -24,26 +24,14 @@ class Loan:
         Loan.counter += 1
 
     def calculate_loan_stats(self):
-        print('\n### calculating loan_stats() ###')
-        print('start_date:', self.start_date)
+        # print('\n### calculating loan_stats() ###')
+        # print('start_date:', self.start_date)
         date = pd.Timestamp(self.start_date)
 
-        # print('self.stats:\n', self.stats.head())
-        # print('Loan.df_btcusd:\n', Loan.df_btcusd)
         self.stats['date'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Date']
-        self.stats['price'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Last']
-        # self.stats['rates'] = tools.get_cadusd_rates(str(self.start_date))
-        rates = tools.get_cadusd_rates(str(self.start_date))
-
-        print('stats shape:', self.stats.shape)
-        # print('stats df:')
-        print()
-        # self.stats['rates'] = rates
-        # print(self.stats)
-        print('len(rates()):', len(rates))
-        print('rates:', rates)
-
-        sys.exit(1)
+        self.stats['usd_price'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Last']
+        self.stats['fx_cadusd'] = tools.get_fx_cadusd_rates(str(self.start_date))
+        self.stats['cad_price'] = [row['usd_price'] / float(row['fx_cadusd']) for _, row in self.stats.iterrows()]
 
     def __str__(self):
         return 'Loan_id:{:0>2d}, amount:${:6d}, ' \

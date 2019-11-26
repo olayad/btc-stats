@@ -18,6 +18,7 @@ def update_btcusd_csv():
         raise ThirdPartyApiUnavailable
     open('./data/btcusd.csv', 'wb+').write(data.content)
 
+
 def get_usd_price():
     price = call_exchange_api()
     print('get_usd_price():', price)
@@ -34,7 +35,7 @@ def call_exchange_api():
     return json.loads(response.text)[0][1]
 
 
-def get_cadusd_rates(start_date, end_date=str(datetime.date.today())):
+def get_fx_cadusd_rates(start_date, end_date=str(datetime.date.today())):
     json_response = call_fx_api(start_date, end_date)
 
     observations = {}
@@ -42,8 +43,8 @@ def get_cadusd_rates(start_date, end_date=str(datetime.date.today())):
         observations = strip_payload(json_response)
     api_data = [{'start_date': start_date, 'end_date': end_date}, observations]
 
-    rates = fill_missing_day_rates(api_data)
-    return rates
+    fx_rates = fill_missing_day_rates(api_data)
+    return fx_rates
 
 
 def call_fx_api(start_date, end_date):

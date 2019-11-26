@@ -31,10 +31,9 @@ except ThirdPartyApiUnavailable:
 
 
 
-# for cdp in loans:
-#     print(cdp)
-
+print('Terminating program exit(0) from app.py')
 exit(0)
+
 
 
 app = dash.Dash()
