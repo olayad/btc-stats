@@ -1,10 +1,9 @@
 import requests
 import json
-import sys
 from exceptions import ThirdPartyApiUnavailable
 import datetime
 
-quandl_url = 'https://www.quandl.com/api/v3/datasets/BITFINEX/BTCUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
+quandl_url = 'https://www.quandl.com/api/v3/datasets/BCHARTS/KRAKENUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
 bitfinex_url = 'https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD'
 bankofcanada_url = 'https://www.bankofcanada.ca/valet/observations/FXCADUSD/json?'
 
@@ -30,7 +29,7 @@ def call_exchange_api():
     try:
         response = requests.get(bitfinex_url, timeout=2)
     except requests.exceptions.Timeout:
-        print('[ERROR] Bitfinex API not responding.')
+        print('[ERROR] Exchange API not responding.')
         raise ThirdPartyApiUnavailable
     return json.loads(response.text)[0][1]
 
@@ -91,6 +90,14 @@ def fill_missing_day_rates(rates):
         curr = curr + datetime.timedelta(days=1)
         if curr > end_date:
             break
+    result = add_extra_rate_if_past_16hrs_pst(result)
     return result
 
 
+def add_extra_rate_if_past_16hrs_pst(result):
+    # At 4pm PST, Kraken closes the day and starts reporting on the next one where
+    # Bank of Canada does not, following extra rate allows for that.
+    now_hour = datetime.datetime.now().hour
+    if now_hour >= 16:
+        result.append(AVG_FXCADUSD)
+    return result
