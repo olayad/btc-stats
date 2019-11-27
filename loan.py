@@ -16,7 +16,7 @@ class Loan:
 
     def __init__(self, loan_amount, date_coll_recv, wallet_address):
         self.stats = pd.DataFrame()
-        self.coll_history = {}
+        self.coll_updates_history = {}
         self.loan_amount = loan_amount
         self.start_date = datetime.datetime.strptime(date_coll_recv, '%Y-%m-%d').date()
         self.wallet_address = wallet_address
@@ -24,29 +24,29 @@ class Loan:
         Loan.counter += 1
 
     def calculate_loan_stats(self):
-        # print('\n### calculating loan_stats() ###')
-        # print('start_date:', self.start_date)
         date = pd.Timestamp(self.start_date)
 
         self.stats['date'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Date']
         self.stats['usd_price'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Last']
         self.stats['fx_cadusd'] = tools.get_fx_cadusd_rates(str(self.start_date))
-
-
-        # TODO: should include below into a different function
-
         self.stats['cad_price'] = [row['usd_price'] / float(row['fx_cadusd']) for _, row in self.stats.iterrows()]
+        self.stats['coll_amount'] = self.populate_collateral_values()
 
-
-        # self.stats['coll_ratio'] = [row['cad_price']]
-
+    def populate_collateral_values(self):
+        result = []
+        days_with_coll_updates = list(self.coll_updates_history.keys())
+        for index, row in self.stats.iterrows():
+            result.append(self.coll_updates_history[days_with_coll_updates[-1]])
+            if row['date'] in days_with_coll_updates:
+                days_with_coll_updates.pop()
+        return result
 
     def __str__(self):
         return 'Loan_id:{:0>2d}, amount:${:6d}, ' \
                'collateral_history:{}, start_date:{} '.format(self.id,
-                                                             self.loan_amount,
-                                                             self.coll_history,
-                                                             self.start_date)
+                                                              self.loan_amount,
+                                                              self.coll_updates_history,
+                                                              self.start_date)
 
 
 def set_test_mode(suite):
@@ -61,15 +61,16 @@ def get_loans():
 
 
 def init_loans():
+    load_dataframes()
     Loan.active_loans = []
+    Loan.active_loans = create_loan_instances()
+    for loan in Loan.active_loans: loan.calculate_loan_stats()
+
+
+def load_dataframes():
     Loan.df_loans = load_loans_dataframe()
     tools.update_btcusd_csv()
     Loan.df_btcusd = load_price_dataframe()
-    Loan.active_loans = create_loan_instances()
-
-    for loan in Loan.active_loans:
-        loan.calculate_loan_stats()
-
 
 
 def load_loans_dataframe():
@@ -135,4 +136,5 @@ def create_loan_instances():
 def update_loan_coll_history(active_loans, coll_entry):
     for cdp in active_loans:
         if cdp.wallet_address == coll_entry['wallet_address']:
-            cdp.coll_history.update({coll_entry['date_coll_recv']: coll_entry['coll_amount']})
+            cdp.coll_updates_history.update({pd.Timestamp(coll_entry['date_coll_recv']):
+                                                 coll_entry['coll_amount']})
