@@ -16,7 +16,8 @@ def update_btcusd_csv():
     except requests.exceptions.Timeout:
         print('[ERROR] Quandl API not responding.')
         raise ThirdPartyApiUnavailable
-    open('./data/btcusd.csv', 'wb+').write(data.content)
+    with open('./data/btcusd.csv', 'wb+') as btcusd:
+        btcusd.write(data.content)
 
 
 def get_usd_price():

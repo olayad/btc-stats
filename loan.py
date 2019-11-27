@@ -10,16 +10,16 @@ test_mode = 0
 
 class Loan:
     counter = 1
-    active_loans = None
+    active_loans = []
     df_loans = None
     df_btcusd = None
 
-    def __init__(self, loan_amount, date_coll_recv, wallet_address, coll_amount):
+    def __init__(self, loan_amount, date_coll_recv, wallet_address):
         self.stats = pd.DataFrame()
+        self.coll_history = {}
         self.loan_amount = loan_amount
-        self.start_date = datetime.datetime.strptime(date_coll_recv, '%Y/%m/%d').date()
+        self.start_date = datetime.datetime.strptime(date_coll_recv, '%Y-%m-%d').date()
         self.wallet_address = wallet_address
-        self.coll_amount = coll_amount
         self.id = self.counter
         Loan.counter += 1
 
@@ -31,13 +31,21 @@ class Loan:
         self.stats['date'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Date']
         self.stats['usd_price'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Last']
         self.stats['fx_cadusd'] = tools.get_fx_cadusd_rates(str(self.start_date))
+
+
+        # TODO: should include below into a different function
+
         self.stats['cad_price'] = [row['usd_price'] / float(row['fx_cadusd']) for _, row in self.stats.iterrows()]
+
+
+        # self.stats['coll_ratio'] = [row['cad_price']]
+
 
     def __str__(self):
         return 'Loan_id:{:0>2d}, amount:${:6d}, ' \
-               'collateral_amount:{}, start_date:{} '.format(self.id,
+               'collateral_history:{}, start_date:{} '.format(self.id,
                                                              self.loan_amount,
-                                                             self.coll_amount,
+                                                             self.coll_history,
                                                              self.start_date)
 
 
@@ -47,7 +55,7 @@ def set_test_mode(suite):
 
 
 def get_loans():
-    if Loan.active_loans is None:
+    if len(Loan.active_loans) is 0:
         init_loans()
     return Loan.active_loans
 
@@ -83,6 +91,7 @@ def load_loans_dataframe():
         except FileNotFoundError:
             print('[ERROR] Could not find file [/data/loans.csv].')
             raise InitializationDataNotFound
+
     df_loans.set_index('num', inplace=True)
     return df_loans
 
@@ -108,12 +117,22 @@ def load_price_dataframe():
 #     df_btcusd = pd.concat([new_row, df_btcusd], sort=True).reset_index(drop=True)
 #     return df_btcusd
 
+
+
 def create_loan_instances():
     active_loans = []
     for index, row in Loan.df_loans.iterrows():
-        cdp = Loan(row['loan_amount'],
-                   row['date_coll_recv'],
-                   row['wallet_address'],
-                   row['coll_amount'])
-        active_loans.append(cdp)
+        if not row['is_coll_rebalance']:
+            cdp = Loan(row['loan_amount'],
+                       row['date_coll_recv'],
+                       row['wallet_address'])
+            active_loans.append(cdp)
+
+        update_loan_coll_history(active_loans, row)
     return active_loans
+
+
+def update_loan_coll_history(active_loans, coll_entry):
+    for cdp in active_loans:
+        if cdp.wallet_address == coll_entry['wallet_address']:
+            cdp.coll_history.update({coll_entry['date_coll_recv']: coll_entry['coll_amount']})
