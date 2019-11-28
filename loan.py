@@ -31,9 +31,21 @@ class Loan:
         self.stats['usd_price'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Last']
         self.stats['fx_cadusd'] = tools.get_fx_cadusd_rates(str(self.start_date))
         self.stats['cad_price'] = [row['usd_price'] / float(row['fx_cadusd']) for _, row in self.stats.iterrows()]
-        self.stats['coll_amount'] = self.populate_collateral_values()
-        # self.stats['loan_ratio'] = self.populate_loan_ratios()
+        self.stats['cad_borrowed'] = self.populate_borrowed_cad()
+        self.stats['collateral_amount'] = self.populate_collateral_values()
+        self.stats['collateralization_ratio'] = self.calculate_collateralization_ratio()
 
+
+        print(self.stats)
+
+    def populate_borrowed_cad(self):
+        result = []
+        days_with_borrowed_cad_update = list(self.borrowed_cad.keys())
+        for index, row in self.stats.iterrows():
+            result.append(self.borrowed_cad[days_with_borrowed_cad_update[-1]])
+            if row['date'] in days_with_borrowed_cad_update:
+                days_with_borrowed_cad_update.pop()
+        return result
 
     def populate_collateral_values(self):
         result = []
@@ -44,14 +56,21 @@ class Loan:
                 days_with_collateral_update.pop()
         return result
 
-    def populate_loan_ratios(self):
+    def populate_loan_values(self):
         result = []
+        days_with_collateral_update = list(self.collateral.keys())
         for index, row in self.stats.iterrows():
-            result.append((row['cad_price'] * row['coll_amount']) / row['cad_borrowed'])
+            result.append(self.collateral[days_with_collateral_update[-1]])
+            if row['date'] in days_with_collateral_update:
+                days_with_collateral_update.pop()
+        return result
 
-
-
-
+    def calculate_collateralization_ratio(self):
+        pass
+        # TODO: Ready to calculate this.
+        # result = []
+        # for index, row in self.stats.iterrows():
+        #     result.append((row['cad_price'] * row['collateral_amount']) / row['cad_borrowed'])
 
     def __str__(self):
         return 'Loan_id:{:0>2d}, amount:${:6d}, ' \
