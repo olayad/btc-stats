@@ -3,9 +3,11 @@ import pandas as pd
 import datetime
 import tools
 from exceptions import InitializationDataNotFound
-import sys
 
-test_mode = 0
+TEST_MODE = 0
+NEW_LOAN = 0
+COLLATERAL_UPDATE = 1
+CAD_BORROWED_UPDATE = 2
 
 
 class Loan:
@@ -14,44 +16,54 @@ class Loan:
     df_loans = None
     df_btcusd = None
 
-    def __init__(self, loan_amount, date_coll_recv, wallet_address):
+    def __init__(self, start_date, wallet_address):
         self.stats = pd.DataFrame()
-        self.coll_updates_history = {}
-        self.loan_amount = loan_amount
-        self.start_date = datetime.datetime.strptime(date_coll_recv, '%Y-%m-%d').date()
+        self.collateral = {}    # {'date':'new collateral amount'}
+        self.borrowed_cad = {}  # {'date':'new borrowed CAD amount'}
+        self.start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
         self.wallet_address = wallet_address
         self.id = self.counter
         Loan.counter += 1
 
     def calculate_loan_stats(self):
         date = pd.Timestamp(self.start_date)
-
         self.stats['date'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Date']
         self.stats['usd_price'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Last']
         self.stats['fx_cadusd'] = tools.get_fx_cadusd_rates(str(self.start_date))
         self.stats['cad_price'] = [row['usd_price'] / float(row['fx_cadusd']) for _, row in self.stats.iterrows()]
         self.stats['coll_amount'] = self.populate_collateral_values()
+        # self.stats['loan_ratio'] = self.populate_loan_ratios()
+
 
     def populate_collateral_values(self):
         result = []
-        days_with_coll_updates = list(self.coll_updates_history.keys())
+        days_with_collateral_update = list(self.collateral.keys())
         for index, row in self.stats.iterrows():
-            result.append(self.coll_updates_history[days_with_coll_updates[-1]])
-            if row['date'] in days_with_coll_updates:
-                days_with_coll_updates.pop()
+            result.append(self.collateral[days_with_collateral_update[-1]])
+            if row['date'] in days_with_collateral_update:
+                days_with_collateral_update.pop()
         return result
+
+    def populate_loan_ratios(self):
+        result = []
+        for index, row in self.stats.iterrows():
+            result.append((row['cad_price'] * row['coll_amount']) / row['cad_borrowed'])
+
+
+
+
 
     def __str__(self):
         return 'Loan_id:{:0>2d}, amount:${:6d}, ' \
                'collateral_history:{}, start_date:{} '.format(self.id,
-                                                              self.loan_amount,
-                                                              self.coll_updates_history,
+                                                              self.borrowed_cad,
+                                                              self.collateral,
                                                               self.start_date)
 
 
 def set_test_mode(suite):
-    global test_mode
-    test_mode = suite
+    global TEST_MODE
+    TEST_MODE = suite
 
 
 def get_loans():
@@ -74,15 +86,15 @@ def load_dataframes():
 
 
 def load_loans_dataframe():
-    global test_mode
+    global TEST_MODE
     df_loans = None
-    if test_mode:
+    if TEST_MODE:
         try:
-            test_path = './tests/'+str(test_mode)
+            test_path = './tests/data/'+str(TEST_MODE)
             print('[INFO] Initializing loans with file: '+test_path)
             df_loans = pd.read_csv(test_path)
         except FileNotFoundError:
-            print('[ERROR] Could not find file [/tests/' +str(test_mode)+']')
+            print('[ERROR] Could not find file [/tests/data' + str(TEST_MODE) + ']')
             raise InitializationDataNotFound
     else:
         try:
@@ -92,7 +104,6 @@ def load_loans_dataframe():
         except FileNotFoundError:
             print('[ERROR] Could not find file [/data/loans.csv].')
             raise InitializationDataNotFound
-
     df_loans.set_index('num', inplace=True)
     return df_loans
 
@@ -119,22 +130,31 @@ def load_price_dataframe():
 #     return df_btcusd
 
 
-
 def create_loan_instances():
     active_loans = []
     for index, row in Loan.df_loans.iterrows():
-        if not row['is_coll_rebalance']:
-            cdp = Loan(row['loan_amount'],
-                       row['date_coll_recv'],
-                       row['wallet_address'])
-            active_loans.append(cdp)
-
-        update_loan_coll_history(active_loans, row)
+        if row['type'] is NEW_LOAN:
+            active_loans.append(instantiate_new_loan(row))
+            update_collateral_history(active_loans, row)
+            update_borrowed_cad_history(active_loans, row)
+        if row['type'] is COLLATERAL_UPDATE:
+            update_collateral_history(active_loans, row)
+        if row['type'] is CAD_BORROWED_UPDATE:
+            update_borrowed_cad_history(active_loans, row)
     return active_loans
 
 
-def update_loan_coll_history(active_loans, coll_entry):
-    for cdp in active_loans:
-        if cdp.wallet_address == coll_entry['wallet_address']:
-            cdp.coll_updates_history.update({pd.Timestamp(coll_entry['date_coll_recv']):
-                                                 coll_entry['coll_amount']})
+def instantiate_new_loan(entry):
+    return Loan(entry['start_date'], entry['wallet_address'])
+
+
+def update_collateral_history(loans, csv_entry):
+    for cdp in loans:
+        if cdp.wallet_address == csv_entry['wallet_address']:
+            cdp.collateral.update({pd.Timestamp(csv_entry['date_update']): csv_entry['collateral_amount']})
+
+
+def update_borrowed_cad_history(loans, csv_entry):
+    for cdp in loans:
+        if cdp.wallet_address == csv_entry['wallet_address']:
+            cdp.borrowed_cad.update({pd.Timestamp(csv_entry['date_update']): csv_entry['cad_borrowed']})

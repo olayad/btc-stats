@@ -77,7 +77,6 @@ def fill_missing_day_rates(rates):
     # For edge case where the date range requested is only all holidays or weekends,
     # a global FX rate is used (updated manually).
     global AVG_FXCADUSD
-
     start_date = datetime.datetime.strptime(rates[0]['start_date'], '%Y-%m-%d')
     end_date = datetime.datetime.strptime(rates[0]['end_date'], '%Y-%m-%d')
     result = []
