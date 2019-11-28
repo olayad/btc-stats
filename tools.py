@@ -38,12 +38,10 @@ def call_exchange_api():
 
 def get_fx_cadusd_rates(start_date, end_date=str(datetime.date.today())):
     json_response = call_fx_api(start_date, end_date)
-
     observations = {}
     if payload_is_not_empty(json_response):
         observations = strip_payload(json_response)
     api_data = [{'start_date': start_date, 'end_date': end_date}, observations]
-
     fx_rates = fill_missing_day_rates(api_data)
     return fx_rates
 

@@ -32,7 +32,7 @@ class Loan:
         self.stats['fx_cadusd'] = tools.get_fx_cadusd_rates(str(self.start_date))
         self.stats['cad_price'] = [row['usd_price'] / float(row['fx_cadusd']) for _, row in self.stats.iterrows()]
         self.stats['cad_borrowed'] = self.populate_borrowed_cad()
-        self.stats['collateral_amount'] = self.populate_collateral_values()
+        self.stats['collateral_amount'] = self.populate_collateral_amounts()
         self.stats['collateralization_ratio'] = self.calculate_collateralization_ratio()
 
 
@@ -47,16 +47,7 @@ class Loan:
                 days_with_borrowed_cad_update.pop()
         return result
 
-    def populate_collateral_values(self):
-        result = []
-        days_with_collateral_update = list(self.collateral.keys())
-        for index, row in self.stats.iterrows():
-            result.append(self.collateral[days_with_collateral_update[-1]])
-            if row['date'] in days_with_collateral_update:
-                days_with_collateral_update.pop()
-        return result
-
-    def populate_loan_values(self):
+    def populate_collateral_amounts(self):
         result = []
         days_with_collateral_update = list(self.collateral.keys())
         for index, row in self.stats.iterrows():
