@@ -22,7 +22,6 @@ def update_btcusd_csv():
 
 def get_usd_price():
     price = call_exchange_api()
-    print('get_usd_price():', price)
     return price
 
 

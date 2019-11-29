@@ -10,7 +10,9 @@ from loan import get_loans, set_test_mode
 from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable
 import sys
 import argparse
+import tools
 
+loans = None
 
 parser = argparse.ArgumentParser(description='CDP stats server.')
 parser.add_argument('-t', '--test', help='Specify the test suite (loans[x].csv file to run')
@@ -29,10 +31,6 @@ except ThirdPartyApiUnavailable:
     print('[ERROR] Third party API not responding, try again later. Terminating execution.')
     sys.exit(1)
 
-
-
-print('Terminating program exit(0) from app.py')
-exit(0)
 
 
 
@@ -65,25 +63,19 @@ app.layout = html.Div([
 
 @app.callback(Output('btc_price', 'children'),
               [Input('update_interval', 'n_intervals')])
-def update_stats(n_intervals):
-    global df_cdp
-
-    # TODO: Need to fix below, price functions were separated
-    # price = get_price()
-    # df_cdp['coll_ratio'] = update_loan_ratios(df_cdp, price)
-    # return 'BTC: '+str(price['USD'])+' USD - '+str(price['CAD'])+' CAD'
-    return 'BTC: price is wakawaka'
+def update_btc_price(n_intervals):
+    price = tools.get_usd_price()
+    return 'BTC: '+str(price['USD'])+' USD - '+str(price['CAD'])+' CAD'
 
 @app.callback(Output('ratio_graph', 'figure'),
               [Input('days_dropbox', 'days')])
 def update_graph(n_days):
-    global df_btcusd
-    global df_cdp
-    data = []
-    start_date = (datetime.today() - timedelta(days=n_days)).date()
+    global loans
+    print('active_loans from app.py:')
+    print(loans.active_loans)
 
-    trace1 = go.Scatter(x=df_btcusd[df_btcusd['Date'] >= start_date],
-                        y=df_cdp['coll_ratio'])
+    # trace1 = go.Scatter(x=df_btcusd[df_btcusd['Date'] >= start_date],
+    #                     y=df_cdp['coll_ratio'])
 
 
 
