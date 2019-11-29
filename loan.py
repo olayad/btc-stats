@@ -35,9 +35,6 @@ class Loan:
         self.stats['collateral_amount'] = self.populate_collateral_amounts()
         self.stats['collateralization_ratio'] = self.calculate_collateralization_ratio()
 
-
-        print(self.stats)
-
     def populate_borrowed_cad(self):
         borrowed_cad_values = []
         dates_which_had_borrowed_cad_update = list(self.borrowed_cad_history.keys())
@@ -57,11 +54,10 @@ class Loan:
         return collateral_values
 
     def calculate_collateralization_ratio(self):
-        pass
-        # TODO: Ready to calculate this.
-        # result = []
-        # for index, row in self.stats.iterrows():
-        #     result.append((row['cad_price'] * row['collateral_amount']) / row['cad_borrowed'])
+        ratio_values = []
+        for index, row in self.stats.iterrows():
+            ratio_values.append((row['cad_price'] * row['collateral_amount']) / row['cad_borrowed'])
+        return ratio_values
 
     def __str__(self):
         return 'Loan_id:{:0>2d}, amount:${:6d}, ' \
