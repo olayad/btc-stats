@@ -24,7 +24,7 @@ class Loan:
         self.collateral_history = {}    # {date:{'type': _ , 'amount': _}
         self.borrowed_cad_history = {}  # {date: amount}
         self.current_collateral = 0
-        self.current_cad_borrowed = 0
+        self.current_borrowed_cad = 0
         self.start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
         self.wallet_address = wallet_address
         self.id = self.counter
@@ -36,16 +36,18 @@ class Loan:
         self.stats['usd_price'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Last']
         self.stats['fx_cadusd'] = tools.get_fx_cadusd_rates(str(self.start_date))
         self.stats['cad_price'] = [row['usd_price'] / float(row['fx_cadusd']) for _, row in self.stats.iterrows()]
-        self.stats['cad_borrowed'] = self.populate_borrowed_cad()
+        self.stats['borrowed_cad'] = self.populate_borrowed_cad()
         self.stats['collateral_amount'] = self.populate_collateral_amounts()
         # self.stats['collateralization_ratio'] = self.calculate_collateralization_ratio()
 
     def populate_borrowed_cad(self):
         borrowed_cad_values = []
         dates_which_had_borrowed_cad_update = list(self.borrowed_cad_history.keys())
+        curr_borrowed = self.current_borrowed_cad
         for index, row in self.stats.iterrows():
-            borrowed_cad_values.append(self.borrowed_cad_history[dates_which_had_borrowed_cad_update[-1]])
+            borrowed_cad_values.append(curr_borrowed)
             if row['date'] in dates_which_had_borrowed_cad_update:
+                curr_borrowed -= self.borrowed_cad_history[row['date']]
                 dates_which_had_borrowed_cad_update.pop()
         return borrowed_cad_values
 
@@ -53,7 +55,6 @@ class Loan:
         collateral_values = []
         dates_which_had_collateral_update = list(self.collateral_history.keys())
         curr_collateral = self.current_collateral
-
         for index, row in self.stats.iterrows():
             collateral_values.append(curr_collateral)
             if row['date'] in dates_which_had_collateral_update:
@@ -180,4 +181,4 @@ def update_borrowed_cad_history(loans, csv_entry):
     for cdp in loans:
         if cdp.wallet_address == csv_entry['wallet_address']:
             cdp.borrowed_cad_history.update({pd.Timestamp(csv_entry['date_update']): csv_entry['cad_borrowed']})
-        # TODO: need to do same adjusts as update_collateral_records
+            cdp.current_borrowed_cad += csv_entry['cad_borrowed']

@@ -95,13 +95,13 @@ class TestLoan(unittest.TestCase):
     def test_multiple_loans_multiple_collateral_increases(self):
         loan.set_test_mode('loans_6.csv')
         loan.init_loans()
-        self.assertEqual(len(loan.Loan.active_loans), 2, "Should be 2")
+        self.assertEqual(len(loan.Loan.active_loans), 2, "Should be 2 active loans")
         self.assertEqual(loan.Loan.active_loans[0].current_collateral, 4.0,
                          'Should be 4.0 in current collateral')
         self.assertEqual(loan.Loan.active_loans[1].current_collateral, 10.0,
                          'Should be 10.0 in current collateral')
-        self.assertEqual(len(loan.Loan.active_loans[0].collateral_history), 4, "Should be 4")
-        self.assertEqual(len(loan.Loan.active_loans[1].collateral_history), 3, "Should be 3")
+        self.assertEqual(len(loan.Loan.active_loans[0].collateral_history), 4, "Should be 4 updates")
+        self.assertEqual(len(loan.Loan.active_loans[1].collateral_history), 3, "Should be 3 updates")
         df_stats0 = loan.Loan.active_loans[0].stats
         self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-01']['collateral_amount'].values[0],
                          10.0, 'Should be 10.0 in collateral_amount')
@@ -132,6 +132,38 @@ class TestLoan(unittest.TestCase):
                          10.0, 'Should be 6.0 in collateral_amount')
         self.assertEqual(df_stats1[df_stats1['date'] == '2019-11-21']['collateral_amount'].values[0],
                          10.0, 'Should be 10.0 in collateral_amount')
+
+    def test_multiple_loans_multiple_cad_borrowed_increases(self):
+        loan.set_test_mode('loans_7.csv')
+        loan.init_loans()
+        self.assertEqual(loan.Loan.active_loans[0].current_borrowed_cad, 10000,
+                         'Should be 10000 in current cad borrowed')
+        self.assertEqual(loan.Loan.active_loans[1].current_borrowed_cad, 6000,
+                         'Should be 6000 in current cad borrowed')
+        self.assertEqual(len(loan.Loan.active_loans[0].borrowed_cad_history), 4, "Should be 4 updates")
+        self.assertEqual(len(loan.Loan.active_loans[1].borrowed_cad_history), 3, "Should be 3 updates")
+        df_stats0 = loan.Loan.active_loans[0].stats
+        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-01']['borrowed_cad'].values[0],
+                         1000, 'Should be 1000 in borrowed_cad')
+        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-04']['borrowed_cad'].values[0],
+                         1000, 'Should be 1000 in borrowed_cad')
+        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-05']['borrowed_cad'].values[0],
+                         3000, 'Should be 3000 in borrowed_cad')
+        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-09']['borrowed_cad'].values[0],
+                         3000, 'Should be 3000 in borrowed_cad')
+        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-10']['borrowed_cad'].values[0],
+                         6000, 'Should be 6000 in borrowed_cad')
+        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-19']['borrowed_cad'].values[0],
+                         6000, 'Should be 6000 in borrowed_cad')
+        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-20']['borrowed_cad'].values[0],
+                         10000, 'Should be 10000 in borrowed_cad')
+        df_stats1 = loan.Loan.active_loans[1].stats
+        self.assertEqual(df_stats1[df_stats1['date'] == '2019-11-01']['borrowed_cad'].values[0],
+                         1000, 'Should be 1000 in borrowed_cad')
+        self.assertEqual(df_stats1[df_stats1['date'] == '2019-11-10']['borrowed_cad'].values[0],
+                         3000, 'Should be 3000 in borrowed_cad')
+        self.assertEqual(df_stats1[df_stats1['date'] == '2019-11-20']['borrowed_cad'].values[0],
+                         6000, 'Should be 60000 in borrowed_cad')
 
 if __name__ == '__main__':
     unittest.main()
