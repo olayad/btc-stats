@@ -68,7 +68,7 @@ class Loan:
     def calculate_collateralization_ratio(self):
         ratio_values = []
         for index, row in self.stats.iterrows():
-            ratio_values.append((row['cad_price'] * row['collateral_amount']) / row['cad_borrowed'])
+            ratio_values.append((row['cad_price'] * row['collateral_amount']) / row['borrowed_cad'])
         return ratio_values
 
     def __str__(self):
