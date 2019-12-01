@@ -2,7 +2,7 @@
 import pandas as pd
 import datetime
 import tools
-from exceptions import InitializationDataNotFound
+from exceptions import InitializationDataNotFound, InvalidLoanData
 
 TEST_MODE = 0
 
@@ -11,7 +11,6 @@ COLLATERAL_INCREASED = 1
 COLLATERAL_DECREASED = 2
 CAD_BORROWED_INCREASED = 3
 
-# TODO: remove num from loan.csv
 
 class Loan:
     counter = 1
@@ -35,10 +34,10 @@ class Loan:
         self.stats['date'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Date']
         self.stats['usd_price'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Last']
         self.stats['fx_cadusd'] = tools.get_fx_cadusd_rates(str(self.start_date))
-        self.stats['cad_price'] = [row['usd_price'] / float(row['fx_cadusd']) for _, row in self.stats.iterrows()]
+        self.stats['cad_price'] = [round(row['usd_price'] / float(row['fx_cadusd']), 2) for _, row in self.stats.iterrows()]
         self.stats['borrowed_cad'] = self.populate_borrowed_cad()
         self.stats['collateral_amount'] = self.populate_collateral_amounts()
-        # self.stats['collateralization_ratio'] = self.calculate_collateralization_ratio()
+        self.stats['collateralization_ratio'] = self.calculate_collateralization_ratio()
 
     def populate_borrowed_cad(self):
         borrowed_cad_values = []
@@ -68,7 +67,8 @@ class Loan:
     def calculate_collateralization_ratio(self):
         ratio_values = []
         for index, row in self.stats.iterrows():
-            ratio_values.append((row['cad_price'] * row['collateral_amount']) / row['borrowed_cad'])
+            ratio = round((row['cad_price'] * row['collateral_amount']) / row['borrowed_cad'], 2)
+            ratio_values.append(ratio)
         return ratio_values
 
     def __str__(self):
@@ -151,14 +151,22 @@ def create_loan_instances():
     active_loans = []
     for index, row in Loan.df_loans.iterrows():
         if row['type'] is NEW_LOAN:
-            active_loans.append(instantiate_new_loan(row))
-            update_collateral_records(active_loans, row)
-            update_borrowed_cad_history(active_loans, row)
+            if new_loan_entry_is_valid(active_loans, row):
+                active_loans.append(instantiate_new_loan(row))
+                update_collateral_records(active_loans, row)
+                update_borrowed_cad_history(active_loans, row)
         if row['type'] is COLLATERAL_INCREASED or row['type'] is COLLATERAL_DECREASED:
             update_collateral_records(active_loans, row)
         if row['type'] is CAD_BORROWED_INCREASED:
             update_borrowed_cad_history(active_loans, row)
     return active_loans
+
+
+def new_loan_entry_is_valid(active_loans, csv_entry):
+    for loan in active_loans:
+        if csv_entry['wallet_address'] == loan.wallet_address:
+            raise InvalidLoanData('Trying to create a loan that already exists.')
+    return True
 
 
 def instantiate_new_loan(entry):

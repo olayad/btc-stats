@@ -4,9 +4,18 @@ import unittest
 import sys
 import os
 sys.path.append(os.path.realpath('.'))
+# sys.path.append('../')
+# print(sys.path)
 import loan
+import exceptions
+
 
 class TestLoan(unittest.TestCase):
+
+    def test_invalid_loan_csv_data(self):
+        loan.set_test_mode('throws_invalid_loan_data.csv')
+        self.assertRaises(exceptions.InvalidLoanData, loan.init_loans)
+
 
     def test_single_loan_no_collateral_updates(self):
         loan.set_test_mode('loans_1.csv')
@@ -126,7 +135,6 @@ class TestLoan(unittest.TestCase):
                          6000, 'Should be 60000 in borrowed_cad')
 
     def test_multiple_loans_multiple_updates_in_collateral_and_cad_borrowed(self):
-
         loan.set_test_mode('loans_7.csv')
         loan.init_loans()
         self.assertEqual(len(loan.Loan.active_loans), 2, "Should be 2 active loans")
@@ -191,6 +199,15 @@ class TestLoan(unittest.TestCase):
         self.assertEqual(df_stats1[df_stats1['date'] == '2019-11-21']['borrowed_cad'].values[0],
                          6000, 'Should be 60000 in borrowed_cad')
 
+    # def test_collateralization_ratio(self):
+    #     loan.set_test_mode('throws_invalid_loan_data.csv')
+    #     loan.init_loans()
+    #     df_stats0 = loan.Loan.active_loans[0].stats
+    #     print(df_stats0)
+    #     self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0],
+    #                      2.05, 'Should be 2.05 in collateralization_ratio')
+    #     self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0],
+    #                      3.09, 'Should be 3.09 in collateralization_ratio')
 
 if __name__ == '__main__':
     unittest.main()

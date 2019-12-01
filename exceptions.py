@@ -5,3 +5,7 @@ class ThirdPartyApiUnavailable(Exception):
 class InitializationDataNotFound(Exception):
     pass
 
+
+class InvalidLoanData(Exception):
+    pass
+

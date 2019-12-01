@@ -7,7 +7,7 @@ import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 from loan import get_loans, set_test_mode
-from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable
+from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable, InvalidLoanData
 import sys
 import argparse
 import tools
@@ -30,6 +30,8 @@ except InitializationDataNotFound:
 except ThirdPartyApiUnavailable:
     print('[ERROR] Third party API not responding, try again later. Terminating execution.')
     sys.exit(1)
+except InvalidLoanData:
+    print('[ERROR] /data/loan.csv file has inconsistent values (duplicate loan entry?)')
 
 
 
