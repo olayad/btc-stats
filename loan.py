@@ -72,12 +72,8 @@ class Loan:
         return ratio_values
 
     def __str__(self):
-        return 'Loan_id:{:0>2d}, amount:${:6d}, ' \
-               'collateral_history:{}, start_date:{} '.format(self.id,
-                                                              self.borrowed_cad_history,
-                                                              self.collateral_history,
-                                                              self.start_date)
-
+        return 'Loan_id:{:0>2d}, current_borrowed:${:6d}, current_collateral:{}, start_date:{} ' \
+               ''.format(self.id, self.current_borrowed_cad, self.current_collateral, self.start_date)
 
 def set_test_mode(test_case):
     global TEST_MODE
