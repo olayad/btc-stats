@@ -5,6 +5,7 @@ import tools
 from exceptions import InitializationDataNotFound, InvalidLoanData
 
 TEST_MODE = 0
+LOANS_INPUT_FILE = 0
 
 NEW_LOAN = 0
 COLLATERAL_INCREASED = 1
@@ -75,9 +76,15 @@ class Loan:
         return 'Loan_id:{:0>2d}, current_borrowed:${:6d}, current_collateral:{}, start_date:{} ' \
                ''.format(self.id, self.current_borrowed_cad, self.current_collateral, self.start_date)
 
+
 def set_test_mode(test_case):
     global TEST_MODE
     TEST_MODE = test_case
+
+
+def set_loans_file(input_file):
+    global LOANS_INPUT_FILE
+    LOANS_INPUT_FILE = input_file
 
 
 def get_loans():
@@ -100,6 +107,7 @@ def load_dataframes():
 
 def load_loans_dataframe():
     global TEST_MODE
+    global LOANS_INPUT_FILE
     df_loans = None
     if TEST_MODE:
         try:
@@ -110,12 +118,16 @@ def load_loans_dataframe():
             print('[ERROR] Could not find file [/tests/data' + str(TEST_MODE) + ']')
             raise InitializationDataNotFound
     else:
+        file = ''
         try:
-            prod_path = './data/loans.csv'
-            print('[INFO] Initializing loans with file: '+prod_path)
-            df_loans = pd.read_csv(prod_path)
+            if LOANS_INPUT_FILE:
+                file = './data/'+LOANS_INPUT_FILE
+            else:
+                file = './data/loans.csv'
+            print('[INFO] Initializing loans with file: '+file)
+            df_loans = pd.read_csv(file)
         except FileNotFoundError:
-            print('[ERROR] Could not find file [/data/loans.csv].')
+            print('[ERROR] Could not find file [{}]'.format(file))
             raise InitializationDataNotFound
     df_loans.set_index('num', inplace=True)
     return df_loans
