@@ -5,7 +5,7 @@ import tools
 from exceptions import InitializationDataNotFound, InvalidLoanData
 
 TEST_MODE = 0
-LOANS_INPUT_FILE = 0
+LOANS_INPUT_FILE = 'loans.csv'
 
 NEW_LOAN = 0
 COLLATERAL_INCREASED = 1
@@ -72,6 +72,10 @@ class Loan:
             ratio_values.append(ratio)
         return ratio_values
 
+    def update_stats_entry(self, date_to_find, value, column='usd_price'):
+        self.stats.loc[self.stats['date'] == date_to_find, column] = value
+
+
     def __str__(self):
         return 'Loan_id:{:0>2d}, current_borrowed:${:6d}, current_collateral:{}, start_date:{} ' \
                ''.format(self.id, self.current_borrowed_cad, self.current_collateral, self.start_date)
@@ -108,27 +112,14 @@ def load_dataframes():
 def load_loans_dataframe():
     global TEST_MODE
     global LOANS_INPUT_FILE
-    df_loans = None
-    if TEST_MODE:
-        try:
-            test_path = './tests/data/'+str(TEST_MODE)
-            print('[INFO] Initializing loans with file: '+test_path)
-            df_loans = pd.read_csv(test_path)
-        except FileNotFoundError:
-            print('[ERROR] Could not find file [/tests/data' + str(TEST_MODE) + ']')
-            raise InitializationDataNotFound
-    else:
-        file = ''
-        try:
-            if LOANS_INPUT_FILE:
-                file = './data/'+LOANS_INPUT_FILE
-            else:
-                file = './data/loans.csv'
-            print('[INFO] Initializing loans with file: '+file)
-            df_loans = pd.read_csv(file)
-        except FileNotFoundError:
-            print('[ERROR] Could not find file [{}]'.format(file))
-            raise InitializationDataNotFound
+    file = ''
+    try:
+        file = './tests/data/'+TEST_MODE if TEST_MODE else './data/'+LOANS_INPUT_FILE
+        print('[INFO] Initializing loans with file: '+file)
+        df_loans = pd.read_csv(file)
+    except FileNotFoundError:
+        print('[ERROR] Could not find file [{}]'.format(file))
+        raise InitializationDataNotFound
     df_loans.set_index('num', inplace=True)
     return df_loans
 
@@ -198,3 +189,10 @@ def update_borrowed_cad_history(loans, csv_entry):
         if cdp.wallet_address == csv_entry['wallet_address']:
             cdp.borrowed_cad_history.update({pd.Timestamp(csv_entry['date_update']): csv_entry['cad_borrowed']})
             cdp.current_borrowed_cad += csv_entry['cad_borrowed']
+
+
+def update_ratios_to_current_price(price_given=0):
+    date = tools.get_current_date_for_exchange_api()
+    price = price_given if price_given else tools.get_usd_price()
+    for loan in Loan.active_loans:
+        loan.update_stats_entry(date, price)
