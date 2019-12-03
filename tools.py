@@ -105,6 +105,4 @@ def add_extra_rate_if_past_16hrs_pst(result):
 def get_current_date_for_exchange_api():
     tz = pytz.timezone('Europe/London')
     ct = datetime.datetime.now(tz=tz)
-    print('current-time-in-london:', ct.isoformat())
-    print(type(ct))
     return ct.strftime('%Y-%m-%d')

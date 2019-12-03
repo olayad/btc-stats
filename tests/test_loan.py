@@ -213,20 +213,37 @@ class TestLoan(unittest.TestCase):
     #     self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-04']['collateralization_ratio'].values[0],
     #                      2.41, 'Should be 2.41 in collateralization_ratio')
 
-
-    def test_here(self):
-        # print(tools.get_usd_price())
-        loan.set_test_mode('loans_8.csv')
+    def test_updating_ratio_with_current_price(self):
+        loan.set_test_mode('loans_9.csv')
         loan.init_loans()
         df_stats0 = loan.Loan.active_loans[0].stats
-        print(df_stats0)
-        print()
-        print()
-        tools.get_current_date_for_exchange_api()
-        loan.update_ratios_to_current_price(price_given=99999)
-        print(df_stats0)
-        # for x in loan.Loan.active_loans:
-        #     x.update_stats_entry('2019-12-02', 99999)
+        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0],
+                         2.05, 'Should be 2.05 in collateralization_ratio')
+        loan.update_ratios_with_current_price(price_given=123456.0)
+        date_to_update = tools.get_current_date_for_exchange_api()
+        self.assertEqual(df_stats0[df_stats0['date'] == date_to_update]['usd_price'].values[0],
+                         123456.0, 'Should be 123456.0 in usd_price')
+        cad_price = df_stats0.loc[df_stats0['date'] == date_to_update, 'cad_price'].values[0]
+        collateral_amount = df_stats0.loc[df_stats0['date'] == date_to_update, 'collateral_amount'].values[0]
+        borrowed_cad = df_stats0.loc[df_stats0['date'] == date_to_update, 'borrowed_cad'].values[0]
+        new_ratio = round((cad_price * collateral_amount) / borrowed_cad, 2)
+        self.assertEqual(df_stats0[df_stats0['date'] == date_to_update]['collateralization_ratio'].values[0],
+                         new_ratio, 'Should be new collateralization_ratio')
+
+    # def test_here(self):
+    #     # print(tools.get_usd_price())
+    #     loan.set_test_mode('loans_8.csv')
+    #     loan.init_loans()
+    #     df_stats0 = loan.Loan.active_loans[0].stats
+    #     print(df_stats0)
+    #     print()
+    #     print()
+    #     # print('today fx rate:', tools.get_fx_cadusd_rates(start_date='2019-12-03', end_date='2019-12-03'))
+    #     # tools.get_current_date_for_exchange_api()
+    #     loan.update_ratios_with_current_price(price_given=99999)
+    #     print(df_stats0)
+    #     # for x in loan.Loan.active_loans:
+    #     #     x.update_stats_entry('2019-12-02', 99999)
 
 if __name__ == '__main__':
     unittest.main()

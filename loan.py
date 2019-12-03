@@ -72,13 +72,18 @@ class Loan:
             ratio_values.append(ratio)
         return ratio_values
 
-    def update_stats_entry(self, date_to_update, price, column='usd_price'):
-        self.stats.loc[self.stats['date'] == date_to_update, column] = price
-        self.recalculate_collateralization_ratio_by_date(date_to_update)
+    def update_stats_with_current_price(self, date_to_update, usd_price):
+        current_fx = float(self.stats.loc[self.stats['date'] == date_to_update, 'fx_cadusd'].values[0])
+        self.stats.loc[self.stats['date'] == date_to_update, 'usd_price'] = usd_price
+        self.stats.loc[self.stats['date'] == date_to_update, 'cad_price'] = (usd_price / current_fx)
+        self.calculate_collateralization_ratio_by_date(date_to_update, usd_price)
 
-    def recalculate_collateralization_ratio_by_date(self, date):
-        ratio = #TODO: how to find this ratio?
-        self.stats.loc[self.stats['date'] == date, 'collateralization_ratio'] = ratio
+    def calculate_collateralization_ratio_by_date(self, date_to_update, usd_price):
+        cad_price = self.stats.loc[self.stats['date'] == date_to_update, 'cad_price']
+        collateral_amount = self.stats.loc[self.stats['date'] == date_to_update, 'collateral_amount']
+        borrowed_cad = self.stats.loc[self.stats['date'] == date_to_update, 'borrowed_cad']
+        current_ratio = round((cad_price * collateral_amount) / borrowed_cad, 2)
+        self.stats.loc[self.stats['date'] == date_to_update, 'collateralization_ratio'] = current_ratio
 
 
     def __str__(self):
@@ -196,7 +201,7 @@ def update_borrowed_cad_history(loans, csv_entry):
             cdp.current_borrowed_cad += csv_entry['cad_borrowed']
 
 
-def update_ratios_to_current_price(price_given=0):
+def update_ratios_with_current_price(price_given=0):
     date = tools.get_current_date_for_exchange_api()
     price = price_given if price_given else tools.get_usd_price()
-    for cdp in Loan.active_loans: cdp.update_stats_entry(date, price)
+    for cdp in Loan.active_loans: cdp.update_stats_with_current_price(date, price)
