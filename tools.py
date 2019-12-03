@@ -2,6 +2,7 @@ import requests
 import json
 from exceptions import ThirdPartyApiUnavailable
 import datetime
+import pytz
 
 quandl_url = 'https://www.quandl.com/api/v3/datasets/BCHARTS/KRAKENUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
 bitfinex_url = 'https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD'
@@ -99,3 +100,11 @@ def add_extra_rate_if_past_16hrs_pst(result):
     if now_hour >= 16:
         result.append(AVG_FXCADUSD)
     return result
+
+
+def get_current_date_for_exchange_api():
+    tz = pytz.timezone('Europe/London')
+    ct = datetime.datetime.now(tz=tz)
+    print('current-time-in-london:', ct.isoformat())
+    print(type(ct))
+    return ct.strftime('%Y-%m-%d')

@@ -72,8 +72,13 @@ class Loan:
             ratio_values.append(ratio)
         return ratio_values
 
-    def update_stats_entry(self, date_to_find, value, column='usd_price'):
-        self.stats.loc[self.stats['date'] == date_to_find, column] = value
+    def update_stats_entry(self, date_to_update, price, column='usd_price'):
+        self.stats.loc[self.stats['date'] == date_to_update, column] = price
+        self.recalculate_collateralization_ratio_by_date(date_to_update)
+
+    def recalculate_collateralization_ratio_by_date(self, date):
+        ratio = #TODO: how to find this ratio?
+        self.stats.loc[self.stats['date'] == date, 'collateralization_ratio'] = ratio
 
 
     def __str__(self):
@@ -162,8 +167,8 @@ def create_loan_instances():
 
 
 def new_loan_entry_is_valid(active_loans, csv_entry):
-    for loan in active_loans:
-        if csv_entry['wallet_address'] == loan.wallet_address:
+    for cdp in active_loans:
+        if csv_entry['wallet_address'] == cdp.wallet_address:
             raise InvalidLoanData('Trying to create a loan that already exists.')
     return True
 
@@ -194,5 +199,4 @@ def update_borrowed_cad_history(loans, csv_entry):
 def update_ratios_to_current_price(price_given=0):
     date = tools.get_current_date_for_exchange_api()
     price = price_given if price_given else tools.get_usd_price()
-    for loan in Loan.active_loans:
-        loan.update_stats_entry(date, price)
+    for cdp in Loan.active_loans: cdp.update_stats_entry(date, price)

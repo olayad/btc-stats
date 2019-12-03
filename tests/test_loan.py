@@ -8,7 +8,8 @@ sys.path.append(os.path.realpath('.'))
 # print(sys.path)
 import loan
 import exceptions
-
+import tools
+import datetime
 
 class TestLoan(unittest.TestCase):
 
@@ -198,19 +199,34 @@ class TestLoan(unittest.TestCase):
     #                      6000, 'Should be 60000 in borrowed_cad')
     #     self.assertEqual(df_stats1[df_stats1['date'] == '2019-11-21']['borrowed_cad'].values[0],
     #                      6000, 'Should be 60000 in borrowed_cad')
+    #
+    # def test_collateralization_ratio(self):
+    #     loan.set_test_mode('loans_8.csv')
+    #     loan.init_loans()
+    #     df_stats0 = loan.Loan.active_loans[0].stats
+    #     self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0],
+    #                      2.05, 'Should be 2.05 in collateralization_ratio')
+    #     self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-02']['collateralization_ratio'].values[0],
+    #                      3.09, 'Should be 3.09 in collateralization_ratio')
+    #     self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-03']['collateralization_ratio'].values[0],
+    #                      2.55, 'Should be 2.55 in collateralization_ratio')
+    #     self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-04']['collateralization_ratio'].values[0],
+    #                      2.41, 'Should be 2.41 in collateralization_ratio')
 
-    def test_collateralization_ratio(self):
+
+    def test_here(self):
+        # print(tools.get_usd_price())
         loan.set_test_mode('loans_8.csv')
         loan.init_loans()
         df_stats0 = loan.Loan.active_loans[0].stats
-        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0],
-                         2.05, 'Should be 2.05 in collateralization_ratio')
-        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-02']['collateralization_ratio'].values[0],
-                         3.09, 'Should be 3.09 in collateralization_ratio')
-        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-03']['collateralization_ratio'].values[0],
-                         2.55, 'Should be 2.55 in collateralization_ratio')
-        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-04']['collateralization_ratio'].values[0],
-                         2.41, 'Should be 2.41 in collateralization_ratio')
+        print(df_stats0)
+        print()
+        print()
+        tools.get_current_date_for_exchange_api()
+        loan.update_ratios_to_current_price(price_given=99999)
+        print(df_stats0)
+        # for x in loan.Loan.active_loans:
+        #     x.update_stats_entry('2019-12-02', 99999)
 
 if __name__ == '__main__':
     unittest.main()
