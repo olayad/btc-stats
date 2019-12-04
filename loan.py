@@ -31,9 +31,9 @@ class Loan:
         Loan.counter += 1
 
     def calculate_loan_stats(self):
-        date = pd.Timestamp(self.start_date)
-        self.stats['date'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Date']
-        self.stats['usd_price'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= date]['Last']
+        loan_start_date = pd.Timestamp(self.start_date)
+        self.stats['date'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= loan_start_date]['Date']
+        self.stats['usd_price'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= loan_start_date]['Last']
         self.stats['fx_cadusd'] = tools.get_fx_cadusd_rates(str(self.start_date))
         self.stats['cad_price'] = [round(row['usd_price'] / float(row['fx_cadusd']), 2) for _, row in self.stats.iterrows()]
         self.stats['borrowed_cad'] = self.populate_borrowed_cad()
@@ -72,15 +72,53 @@ class Loan:
             ratio_values.append(ratio)
         return ratio_values
 
+
     def update_stats_with_current_price(self, date_to_update, usd_price):
+        if self.date_to_update_is_not_in_stats(date_to_update):
+            print('appending_to_stats_new_entry:{}'.format(date_to_update))
+            self.append_new_row_to_stats(date_to_update, usd_price)
+        self.calculate_new_row_cad_price(date_to_update, usd_price)
+        self.calculate_new_row_ratio(date_to_update, usd_price)
+        print('stats from loan:\n', self.stats.head())
+
+
+    def calculate_new_row_cad_price(self, date_to_update, usd_price):
         current_fx = float(self.stats.loc[self.stats['date'] == date_to_update, 'fx_cadusd'].values[0])
         self.stats.loc[self.stats['date'] == date_to_update, 'usd_price'] = usd_price
         self.stats.loc[self.stats['date'] == date_to_update, 'cad_price'] = (usd_price / current_fx)
-        self.calculate_collateralization_ratio_by_date(date_to_update, usd_price)
 
-    def calculate_collateralization_ratio_by_date(self, date_to_update, usd_price):
-        # TODO: What happens if date_to_update is not in self.stats? e.g. program has been running for long \
-        # and it went to pass the time where exchange api changes day.
+    def date_to_update_is_not_in_stats(self, date_to_update):
+        df_earliest_date = self.stats.iloc[0]['date']
+        return df_earliest_date != date_to_update
+
+    def append_new_row_to_stats(self, date_to_update, usd_price):
+
+        # fx_rate = tools.get_fx_cadusd_rates(start_date='2019-12-03', end_date='2019-12-03')
+        today = datetime.datetime.now().strftime('%Y-%m-%d')
+        fx_rate = tools.get_fx_cadusd_rates(start_date=today)[0]
+        print('usd_price:', usd_price)
+        print('fx_rate', fx_rate)
+        cad_price = round(usd_price / fx_rate, 2)
+
+        print('cad_price', cad_price)
+
+        print('collateral', self.current_collateral)
+        print('borrowed_cad', self.current_borrowed_cad)
+        ratio = (cad_price * self.current_collateral) / self.current_borrowed_cad
+        print('fx rate:', fx_rate)
+        new_row = pd.DataFrame({'date': [date_to_update],
+                                'usd_price': [usd_price],
+                                'fx_cadusd': [fx_rate],
+                                'cad_price': [cad_price],
+                                'borrowed_cad': [self.current_borrowed_cad],
+                                'collateral_amount': [self.current_collateral],
+                                'collateralization_ratio': [ratio]})
+        print('new_row:\n', new_row)
+        # self.stats = pd.concat([new_row, self.stats], sort=True).reset_index(drop=True)
+
+        self.stats = pd.concat([new_row, self.stats]).reset_index(drop=True)
+
+    def calculate_new_row_ratio(self, date_to_update, usd_price):
         cad_price = self.stats.loc[self.stats['date'] == date_to_update, 'cad_price']
         collateral_amount = self.stats.loc[self.stats['date'] == date_to_update, 'collateral_amount']
         borrowed_cad = self.stats.loc[self.stats['date'] == date_to_update, 'borrowed_cad']
@@ -145,17 +183,7 @@ def load_price_dataframe():
         raise InitializationDataNotFound
     df_btcusd['Date'] = pd.to_datetime(df_btcusd['Date'])
     df_btcusd['Last'] = pd.to_numeric(df_btcusd['Close'])
-
     return df_btcusd
-
-# def append_current_btc_price(df_btcusd):
-#     today = datetime.datetime.strptime(str(datetime.date.today()), '%Y-%m-%d')
-#     price = tools.get_usd_price()
-#     new_row = pd.DataFrame({'Date': [today], 'Open': ['NA'], 'High': ['NA'], 'Low': ['NA'],
-#                             'Close': [price], 'Volume (BTC)': ['NA'],
-#                             'Volume (Currency)': ['NA'], 'Weighted Price': ['NA']})
-#     df_btcusd = pd.concat([new_row, df_btcusd], sort=True).reset_index(drop=True)
-#     return df_btcusd
 
 
 def create_loan_instances():
@@ -203,7 +231,7 @@ def update_borrowed_cad_history(loans, csv_entry):
             cdp.current_borrowed_cad += csv_entry['cad_borrowed']
 
 
-def update_ratios_with_current_price(price_given=0):
-    date = tools.get_current_date_for_exchange_api()
+def update_ratios_with_current_price(date_given=0, price_given=0):
+    date = tools.get_current_date_for_exchange_api() if not date_given else date_given
     price = price_given if price_given else tools.get_usd_price()
-    for cdp in Loan.active_loans: cdp.update_stats_with_current_price(date, price)
+    for cdp in Loan.active_loans: cdp.update_stats_with_current_price(pd.Timestamp(date), price)
