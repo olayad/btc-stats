@@ -7,11 +7,13 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
-from loan import get_loans, set_test_mode, set_loans_file, Loan
+from loan import Loan, get_loans, set_test_mode, set_loans_file, update_ratios_with_current_price
 from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable, InvalidLoanData
 import sys
 import argparse
 import tools
+
+import time
 
 loans = None
 
@@ -44,7 +46,7 @@ app = dash.Dash()
 app.layout = html.Div([
     # Price ticker
     html.H1(id='btc_price', children='BTC: USD.'),
-    dcc.Interval(id='update_interval', interval=50000, n_intervals=0),
+    dcc.Interval(id='update_interval', interval=2000, n_intervals=0),
 
     # Time frame selection
     html.Div([
@@ -67,15 +69,23 @@ app.layout = html.Div([
     ])
 ])
 
+
 @app.callback(Output('btc_price', 'children'),
               [Input('update_interval', 'n_intervals')])
 def update_btc_price(n_intervals):
     price = tools.get_usd_price()
     return 'BTC: '+str(price)+' USD'
 
+
 @app.callback(Output('ratio_graph', 'figure'),
-              [Input('days_dropbox', 'value')])
-def update_graph(n_days):
+              [Input('update_interval', 'n_intervals')])
+def update_collateralization_graph(n_intervals):
+    update_ratios_with_current_price()
+    figure = build_collateralization_graph()
+    return figure
+
+
+def build_collateralization_graph():
     data = []
     oldest_start_date = datetime.date.today()
     for loan in Loan.active_loans:

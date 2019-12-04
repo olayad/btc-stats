@@ -79,6 +79,8 @@ class Loan:
         self.calculate_collateralization_ratio_by_date(date_to_update, usd_price)
 
     def calculate_collateralization_ratio_by_date(self, date_to_update, usd_price):
+        # TODO: What happens if date_to_update is not in self.stats? e.g. program has been running for long \
+        # and it went to pass the time where exchange api changes day.
         cad_price = self.stats.loc[self.stats['date'] == date_to_update, 'cad_price']
         collateral_amount = self.stats.loc[self.stats['date'] == date_to_update, 'collateral_amount']
         borrowed_cad = self.stats.loc[self.stats['date'] == date_to_update, 'borrowed_cad']
