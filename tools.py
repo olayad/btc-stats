@@ -23,6 +23,7 @@ def update_btcusd_csv():
 
 def get_usd_price():
     price = call_exchange_api()
+    # TODO: Investigate, if multiple clients requesting info at the same time, it will reach a limit and send a string
     return price
 
 
@@ -46,6 +47,7 @@ def get_fx_cadusd_rates(start_date, end_date=str(datetime.date.today())):
     return fx_rates
 
 
+def call_fx_api(start_date, end_date):
     response = None
     try:
         response = requests.get(bankofcanada_url+'start_date='+start_date +

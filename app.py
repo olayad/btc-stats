@@ -46,7 +46,7 @@ app = dash.Dash()
 app.layout = html.Div([
     # Price ticker
     html.H1(id='btc_price', children='BTC: USD.'),
-    dcc.Interval(id='update_interval', interval=2000, n_intervals=0),
+    dcc.Interval(id='update_interval', interval=5000, n_intervals=0),
 
     # Time frame selection
     html.Div([

@@ -82,7 +82,7 @@ class Loan:
     def calculate_new_row_cad_price(self, date_to_update, usd_price):
         current_fx = float(self.stats.loc[self.stats['date'] == date_to_update, 'fx_cadusd'].values[0])
         self.stats.loc[self.stats['date'] == date_to_update, 'usd_price'] = usd_price
-        self.stats.loc[self.stats['date'] == date_to_update, 'cad_price'] = (usd_price / current_fx)
+        self.stats.loc[self.stats['date'] == date_to_update, 'cad_price'] = usd_price / current_fx
 
     def date_to_update_is_not_in_stats(self, date_to_update):
         df_earliest_date = self.stats.iloc[0]['date']
@@ -217,4 +217,4 @@ def update_borrowed_cad_history(loans, csv_entry):
 def update_ratios_with_current_price(date_given=0, price_given=0):
     date = tools.get_current_date_for_exchange_api() if not date_given else date_given
     price = price_given if price_given else tools.get_usd_price()
-    for cdp in Loan.active_loans: cdp.update_stats_with_current_price(pd.Timestamp(date), price)
+    for cdp in Loan.active_loans: cdp.update_stats_with_current_price(pd.Timestamp(date), float(price))
