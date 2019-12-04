@@ -72,15 +72,12 @@ class Loan:
             ratio_values.append(ratio)
         return ratio_values
 
-
     def update_stats_with_current_price(self, date_to_update, usd_price):
         if self.date_to_update_is_not_in_stats(date_to_update):
             print('appending_to_stats_new_entry:{}'.format(date_to_update))
             self.append_new_row_to_stats(date_to_update, usd_price)
         self.calculate_new_row_cad_price(date_to_update, usd_price)
         self.calculate_new_row_ratio(date_to_update, usd_price)
-        print('stats from loan:\n', self.stats.head())
-
 
     def calculate_new_row_cad_price(self, date_to_update, usd_price):
         current_fx = float(self.stats.loc[self.stats['date'] == date_to_update, 'fx_cadusd'].values[0])
@@ -92,20 +89,10 @@ class Loan:
         return df_earliest_date != date_to_update
 
     def append_new_row_to_stats(self, date_to_update, usd_price):
-
-        # fx_rate = tools.get_fx_cadusd_rates(start_date='2019-12-03', end_date='2019-12-03')
         today = datetime.datetime.now().strftime('%Y-%m-%d')
-        fx_rate = tools.get_fx_cadusd_rates(start_date=today)[0]
-        print('usd_price:', usd_price)
-        print('fx_rate', fx_rate)
+        fx_rate = float(tools.get_fx_cadusd_rates(start_date=today)[0])
         cad_price = round(usd_price / fx_rate, 2)
-
-        print('cad_price', cad_price)
-
-        print('collateral', self.current_collateral)
-        print('borrowed_cad', self.current_borrowed_cad)
         ratio = (cad_price * self.current_collateral) / self.current_borrowed_cad
-        print('fx rate:', fx_rate)
         new_row = pd.DataFrame({'date': [date_to_update],
                                 'usd_price': [usd_price],
                                 'fx_cadusd': [fx_rate],
@@ -113,9 +100,6 @@ class Loan:
                                 'borrowed_cad': [self.current_borrowed_cad],
                                 'collateral_amount': [self.current_collateral],
                                 'collateralization_ratio': [ratio]})
-        print('new_row:\n', new_row)
-        # self.stats = pd.concat([new_row, self.stats], sort=True).reset_index(drop=True)
-
         self.stats = pd.concat([new_row, self.stats]).reset_index(drop=True)
 
     def calculate_new_row_ratio(self, date_to_update, usd_price):
@@ -124,7 +108,6 @@ class Loan:
         borrowed_cad = self.stats.loc[self.stats['date'] == date_to_update, 'borrowed_cad']
         current_ratio = round((cad_price * collateral_amount) / borrowed_cad, 2)
         self.stats.loc[self.stats['date'] == date_to_update, 'collateralization_ratio'] = current_ratio
-
 
     def __str__(self):
         return 'Loan_id:{:0>2d}, current_borrowed:${:6d}, current_collateral:{}, start_date:{} ' \

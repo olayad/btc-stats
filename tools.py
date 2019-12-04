@@ -46,7 +46,6 @@ def get_fx_cadusd_rates(start_date, end_date=str(datetime.date.today())):
     return fx_rates
 
 
-def call_fx_api(start_date, end_date):
     response = None
     try:
         response = requests.get(bankofcanada_url+'start_date='+start_date +
