@@ -13,10 +13,7 @@ import sys
 import argparse
 import tools
 
-import time
-
 loans = None
-
 
 parser = argparse.ArgumentParser(description='CDP stats server.')
 
@@ -45,8 +42,9 @@ except InvalidLoanData:
 app = dash.Dash()
 app.layout = html.Div([
     # Price ticker
-    html.H1(id='btc_price', children='BTC: USD.'),
-    dcc.Interval(id='update_interval', interval=5000, n_intervals=0),
+    dcc.Interval(id='interval-component', interval=10000, n_intervals=0),
+
+    html.H1(id='btc_price', children=''),
 
     # Time frame selection
     html.Div([
@@ -70,22 +68,29 @@ app.layout = html.Div([
 ])
 
 
-@app.callback(Output('btc_price', 'children'),
-              [Input('update_interval', 'n_intervals')])
-def update_btc_price(n_intervals):
-    price = tools.get_usd_price()
-    return 'BTC: '+str(price)+' USD'
+@app.callback([Output('btc_price', 'children'),
+               Output('ratio_graph', 'figure')],
+              [Input('interval-component', 'n_intervals')])
+def interval_update_triggered(n_intervals):
+    # TODO: Need to wrap this, to catch Third Party API exception
+    price = update_price()
+    figure = update_collateralization_graph()
+    return price, figure
 
 
-@app.callback(Output('ratio_graph', 'figure'),
-              [Input('update_interval', 'n_intervals')])
-def update_collateralization_graph(n_intervals):
+def update_price():
+    return 'BTC: '+str(tools.get_usd_price())+' USD'
+
+
+def update_collateralization_graph():
+    print('calling update_collateralization_graph')
     update_ratios_with_current_price()
     figure = build_collateralization_graph()
     return figure
 
 
 def build_collateralization_graph():
+    print('building graph...')
     data = []
     oldest_start_date = datetime.date.today()
     for loan in Loan.active_loans:
