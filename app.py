@@ -41,26 +41,9 @@ except InvalidLoanData:
 
 app = dash.Dash()
 app.layout = html.Div([
-    # Price ticker
     dcc.Interval(id='interval-component', interval=10000, n_intervals=0),
 
     html.H1(id='btc_price', children=''),
-
-    # Time frame selection
-    html.Div([
-        html.Div([
-            html.Label(children='Select time frame:')
-        ], style={'width': '150px', 'display': 'inline-block', 'vertical-align': 'middle'}),
-        html.Div([
-            dcc.Dropdown(id='days_dropbox',
-                options=[
-                    {'label': '90 days', 'value': 90},
-                    {'label': '60 days', 'value': 60},
-                    {'label': '30 days', 'value': 30}
-                ],
-                value=30)
-        ], style={'width': '150px', 'display': 'inline-block', 'vertical-align': 'top'})
-    ], style={'padding-top': '20px'}),
 
     html.Div([
         dcc.Graph(id='ratio_graph')
@@ -74,7 +57,7 @@ app.layout = html.Div([
 def interval_update_triggered(n_intervals):
     # TODO: Need to wrap this, to catch Third Party API exception
     price = update_price()
-    figure = update_collateralization_graph()
+    figure = update_ratio_graph()
     return price, figure
 
 
@@ -82,15 +65,13 @@ def update_price():
     return 'BTC: '+str(tools.get_usd_price())+' USD'
 
 
-def update_collateralization_graph():
-    print('calling update_collateralization_graph')
+def update_ratio_graph():
     update_ratios_with_current_price()
-    figure = build_collateralization_graph()
+    figure = build_ratio_graph()
     return figure
 
 
-def build_collateralization_graph():
-    print('building graph...')
+def build_ratio_graph():
     data = []
     oldest_start_date = datetime.date.today()
     for loan in Loan.active_loans:
@@ -100,15 +81,49 @@ def build_collateralization_graph():
                            mode='lines',
                            name='$'+str(loan.current_borrowed_cad))
         data.append(trace)
-    layout = go.Layout(title='Collateralization Ratio',
+    layout = go.Layout(title='Collateral Coverage Ratio',
                        shapes=[{'type': 'line',
                                 'y0': 2, 'x0': oldest_start_date,
                                 'y1': 2, 'x1': datetime.date.today(),
-                                'line': {'color': 'red', 'width': 1.0, 'dash': 'dot'}}],
+                                'line': {'color': 'red', 'width': 2.0, 'dash': 'dot'}}],
                        legend_orientation='h',
-                       showlegend=True)
+                       showlegend=True,
+                       xaxis={
+                           'rangeselector': {'buttons':[
+                               {
+                                   "count": 3,
+                                   "label": "3 mo",
+                                   "step": "month",
+                                   "stepmode": "backward"
+                               },
+                               {
+                                   "count": 6,
+                                   "label": "6 mo",
+                                   "step": "month",
+                                   "stepmode": "backward"
+                               },
+                               {
+                                   "count": 1,
+                                   "label": "1 yr",
+                                   "step": "year",
+                                   "stepmode": "backward"
+                               },
+                               {
+                                   "count": 1,
+                                   "label": "YTD",
+                                   "step": "year",
+                                   "stepmode": "todate"
+                               },
+                               {"step": "all"}
+                           ]},
+                           'rangeslider': {'visible': True},
+                           'type': 'date',
+                           "autorange": True
+                       }
+    )
     figure = {'data': data, 'layout': layout}
     return figure
+
 
 if __name__ == '__main__':
     app.run_server()
