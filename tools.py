@@ -74,7 +74,7 @@ def fill_missing_day_rates(rates):
     # When an entry is missing from the Bank of Canada response (holiday/weekend),
     # the algorithm will use the last previous rate added to result.
     # For edge case where the date range requested is only all holidays or weekends,
-    # a global FX rate is used (updated manually).
+    # a global variable (AVG_FXCADUSD) is used, which is updated manually.
     global AVG_FXCADUSD
     start_date = datetime.datetime.strptime(rates[0]['start_date'], '%Y-%m-%d')
     end_date = datetime.datetime.strptime(rates[0]['end_date'], '%Y-%m-%d')

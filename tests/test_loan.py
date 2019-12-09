@@ -203,20 +203,20 @@ class TestLoan(unittest.TestCase):
         loan.init_loans()
         df_stats0 = loan.Loan.active_loans[0].stats
         self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0],
-                         2.04, 'Should be 2.05 in collateralization_ratio')
+                         2.05, 'Should be 2.05 in collateralization_ratio')
         self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-02']['collateralization_ratio'].values[0],
-                         3.09, 'Should be 3.09 in collateralization_ratio')
+                         3.08, 'Should be 3.08 in collateralization_ratio')
         self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-03']['collateralization_ratio'].values[0],
-                         2.55, 'Should be 2.55 in collateralization_ratio')
+                         2.54, 'Should be 2.54 in collateralization_ratio')
         self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-04']['collateralization_ratio'].values[0],
-                         2.41, 'Should be 2.41 in collateralization_ratio')
+                         2.4, 'Should be 2.4 in collateralization_ratio')
 
     def test_updating_ratio_with_current_price(self):
         loan.set_test_mode('loans_9.csv')
         loan.init_loans()
         df_stats0 = loan.Loan.active_loans[0].stats
         self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0],
-                         2.04, 'Should be 2.05 in collateralization_ratio')
+                         2.05, 'Should be 2.05 in collateralization_ratio')
         loan.update_ratios_with_current_price(price_given=123456.0)
         date_to_update = tools.get_current_date_for_exchange_api()
         self.assertEqual(df_stats0[df_stats0['date'] == date_to_update]['usd_price'].values[0],
@@ -231,13 +231,13 @@ class TestLoan(unittest.TestCase):
     def test_adding_new_row_to_stats(self):
         loan.set_test_mode('loans_10.csv')
         loan.init_loans()
+        df_stats0 = loan.Loan.active_loans[0].stats
         date_not_in_stats = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
         price = 123456.0
         loan.update_ratios_with_current_price(date_given=date_not_in_stats, price_given=price)
         df_stats0 = loan.Loan.active_loans[0].stats
         self.assertEqual(df_stats0[df_stats0['date'] == date_not_in_stats]['usd_price'].values[0],
                          price, 'Should be the price in the new stats entry')
-
 
 if __name__ == '__main__':
     unittest.main()

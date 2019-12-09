@@ -74,7 +74,6 @@ class Loan:
 
     def update_stats_with_current_price(self, date_to_update, usd_price):
         if self.date_to_update_is_not_in_stats(date_to_update):
-            print('appending_to_stats_new_entry:{}'.format(date_to_update))
             self.append_new_row_to_stats(date_to_update, usd_price)
         self.calculate_new_row_cad_price(date_to_update, usd_price)
         self.calculate_new_row_ratio(date_to_update, usd_price)
