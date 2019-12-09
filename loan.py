@@ -11,7 +11,7 @@ NEW_LOAN = 0
 COLLATERAL_INCREASED = 1
 COLLATERAL_DECREASED = 2
 CAD_BORROWED_INCREASED = 3
-
+DAILY_INTEREST = 0.000329
 
 class Loan:
     counter = 1
@@ -39,6 +39,7 @@ class Loan:
         self.stats['borrowed_cad'] = self.populate_borrowed_cad()
         self.stats['collateral_amount'] = self.populate_collateral_amounts()
         self.stats['collateralization_ratio'] = self.calculate_collateralization_ratio()
+        self.stats['accrued_interest_cad'] = self.calculate_interest()
 
     def populate_borrowed_cad(self):
         borrowed_cad_values = []
@@ -67,10 +68,24 @@ class Loan:
 
     def calculate_collateralization_ratio(self):
         ratio_values = []
-        for index, row in self.stats.iterrows():
+        for _, row in self.stats.iterrows():
             ratio = round((row['cad_price'] * row['collateral_amount']) / row['borrowed_cad'], 2)
             ratio_values.append(ratio)
         return ratio_values
+
+    def calculate_interest(self):
+        # print('type(self.start_date)', type(self))
+        interest = []
+        start_date = datetime.datetime(self.start_date.year, self.start_date.month, self.start_date.day)
+        for _, row in self.stats.iterrows():
+            days_active = (row['date'].to_pydatetime() - start_date).days
+            interest_accrued = round((DAILY_INTEREST * row['borrowed_cad']), 2)
+            print('days_active:{}, borrowed_cad:{}, interest:{}'.format(days_active, row['borrowed_cad'], interest_accrued))
+            interest.append(interest_accrued)
+            # interest = round((row['date']))
+        # today = datetime.datetime.now()
+        # print('days_active', days_active.days)
+        return interest
 
     def update_stats_with_current_price(self, date_to_update, usd_price):
         if self.date_to_update_is_not_in_stats(date_to_update):
@@ -88,6 +103,7 @@ class Loan:
         return df_earliest_date != date_to_update
 
     def append_new_row_to_stats(self, date_to_update, usd_price):
+        #Todo: append accrued interest 
         today = datetime.datetime.now().strftime('%Y-%m-%d')
         fx_rate = float(tools.get_fx_cadusd_rates(start_date=today)[0])
         cad_price = round(usd_price / fx_rate, 2)
