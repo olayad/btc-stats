@@ -39,7 +39,7 @@ class Loan:
         self.stats['borrowed_cad'] = self.populate_borrowed_cad()
         self.stats['collateral_amount'] = self.populate_collateral_amounts()
         self.stats['collateralization_ratio'] = self.calculate_collateralization_ratio()
-        self.stats['accrued_interest_cad'] = self.calculate_interest()
+        self.stats['interest_accrued_cad'] = self.calculate_interest()
 
     def populate_borrowed_cad(self):
         borrowed_cad_values = []
@@ -74,17 +74,13 @@ class Loan:
         return ratio_values
 
     def calculate_interest(self):
-        # print('type(self.start_date)', type(self))
         interest = []
         start_date = datetime.datetime(self.start_date.year, self.start_date.month, self.start_date.day)
-        for _, row in self.stats.iterrows():
-            days_active = (row['date'].to_pydatetime() - start_date).days
-            interest_accrued = round((DAILY_INTEREST * row['borrowed_cad']), 2)
-            print('days_active:{}, borrowed_cad:{}, interest:{}'.format(days_active, row['borrowed_cad'], interest_accrued))
-            interest.append(interest_accrued)
-            # interest = round((row['date']))
-        # today = datetime.datetime.now()
-        # print('days_active', days_active.days)
+        interest_accrued = 0
+        for _, row in self.stats[::-1].iterrows():
+            daily_interest = DAILY_INTEREST * row['borrowed_cad']
+            interest_accrued += daily_interest
+            interest.insert(0, round(interest_accrued, 2))
         return interest
 
     def update_stats_with_current_price(self, date_to_update, usd_price):
@@ -93,29 +89,30 @@ class Loan:
         self.calculate_new_row_cad_price(date_to_update, usd_price)
         self.calculate_new_row_ratio(date_to_update, usd_price)
 
-    def calculate_new_row_cad_price(self, date_to_update, usd_price):
-        current_fx = float(self.stats.loc[self.stats['date'] == date_to_update, 'fx_cadusd'].values[0])
-        self.stats.loc[self.stats['date'] == date_to_update, 'usd_price'] = usd_price
-        self.stats.loc[self.stats['date'] == date_to_update, 'cad_price'] = usd_price / current_fx
-
     def date_to_update_is_not_in_stats(self, date_to_update):
         df_earliest_date = self.stats.iloc[0]['date']
         return df_earliest_date != date_to_update
 
     def append_new_row_to_stats(self, date_to_update, usd_price):
-        #Todo: append accrued interest 
         today = datetime.datetime.now().strftime('%Y-%m-%d')
         fx_rate = float(tools.get_fx_cadusd_rates(start_date=today)[0])
         cad_price = round(usd_price / fx_rate, 2)
         ratio = (cad_price * self.current_collateral) / self.current_borrowed_cad
+        interest = self.calculate_new_row_interest()
         new_row = pd.DataFrame({'date': [date_to_update],
                                 'usd_price': [usd_price],
                                 'fx_cadusd': [fx_rate],
                                 'cad_price': [cad_price],
                                 'borrowed_cad': [self.current_borrowed_cad],
                                 'collateral_amount': [self.current_collateral],
-                                'collateralization_ratio': [ratio]})
+                                'collateralization_ratio': [ratio],
+                                'interest_accrued_cad': [interest]})
         self.stats = pd.concat([new_row, self.stats]).reset_index(drop=True)
+
+    def calculate_new_row_cad_price(self, date_to_update, usd_price):
+        current_fx = float(self.stats.loc[self.stats['date'] == date_to_update, 'fx_cadusd'].values[0])
+        self.stats.loc[self.stats['date'] == date_to_update, 'usd_price'] = usd_price
+        self.stats.loc[self.stats['date'] == date_to_update, 'cad_price'] = usd_price / current_fx
 
     def calculate_new_row_ratio(self, date_to_update, usd_price):
         cad_price = self.stats.loc[self.stats['date'] == date_to_update, 'cad_price']
@@ -123,6 +120,10 @@ class Loan:
         borrowed_cad = self.stats.loc[self.stats['date'] == date_to_update, 'borrowed_cad']
         current_ratio = round((cad_price * collateral_amount) / borrowed_cad, 2)
         self.stats.loc[self.stats['date'] == date_to_update, 'collateralization_ratio'] = current_ratio
+
+    def calculate_new_row_interest(self):
+        interest_accumulated = self.stats.iloc[0]['interest_accrued_cad']
+        return interest_accumulated + (DAILY_INTEREST * self.current_borrowed_cad)
 
     def __str__(self):
         return 'Loan_id:{:0>2d}, current_borrowed:${:6d}, current_collateral:{}, start_date:{} ' \
