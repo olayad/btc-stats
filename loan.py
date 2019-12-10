@@ -234,3 +234,22 @@ def update_ratios_with_current_price(date_given=0, price_given=0):
     date = tools.get_current_date_for_exchange_api() if not date_given else date_given
     price = price_given if price_given else tools.get_usd_price()
     for cdp in Loan.active_loans: cdp.update_stats_with_current_price(pd.Timestamp(date), float(price))
+
+
+def build_interest_dataframe():
+    active_loans = set()
+    inactive_loans = set()
+    for cdp in Loan.active_loans: inactive_loans.add(cdp)
+    # find oldest loans, move to active_set
+    oldest_cdp = datetime.datetime.today().date()
+    for cdp in Loan.active_loans:
+        if cdp.start_date < oldest_cdp: oldest_cdp = cdp.start_date
+    for cdp in Loan.active_loans:
+        if cdp.start_date == oldest_cdp:
+            inactive_loans.remove(cdp)
+            active_loans.add(cdp)
+    print('active_set:')
+    for x in active_loans: print(x)
+    print()
+    print('inactive_set:')
+    for x in inactive_loans: print(x)
