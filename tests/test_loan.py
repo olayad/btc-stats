@@ -13,7 +13,7 @@ import tools
 
 class TestLoan(unittest.TestCase):
     def test_invalid_loan_csv_data(self):
-        loan.set_test_mode('throws_invalid_loan_data.csv')
+        loan.set_test_mode('loans_0.csv')
         self.assertRaises(exceptions.InvalidLoanData, loan.init_loans)
 
     def test_single_loan_no_collateral_updates(self):
@@ -201,7 +201,7 @@ class TestLoan(unittest.TestCase):
         loan.init_loans()
         df_stats0 = loan.Loan.active_loans[0].stats
         self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0],
-                         2.05, 'Should be 2.05 in collateralization_ratio')
+                         2.04, 'Should be 2.04 in collateralization_ratio')
         self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-02']['collateralization_ratio'].values[0],
                          3.08, 'Should be 3.08 in collateralization_ratio')
         self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-03']['collateralization_ratio'].values[0],
@@ -214,7 +214,7 @@ class TestLoan(unittest.TestCase):
         loan.init_loans()
         df_stats0 = loan.Loan.active_loans[0].stats
         self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0],
-                         2.05, 'Should be 2.05 in collateralization_ratio')
+                         2.04, 'Should be 2.04 in collateralization_ratio')
         loan.update_ratios_with_current_price(price_given=123456.0)
         date_to_update = tools.get_current_date_for_exchange_api()
         self.assertEqual(df_stats0[df_stats0['date'] == date_to_update]['usd_price'].values[0],
@@ -236,26 +236,64 @@ class TestLoan(unittest.TestCase):
         self.assertEqual(df_stats0[df_stats0['date'] == date_not_in_stats]['usd_price'].values[0],
                          price, 'Should be the price in the new stats entry')
         loan0 = loan.Loan.active_loans[0]
-        prev_interest_accrued = df_stats0.iloc[1]['interest_accrued_cad']
+        prev_interest_accrued = df_stats0.iloc[1]['interest_cad']
         curr_interest_accrued = round(prev_interest_accrued + (loan.DAILY_INTEREST * loan0.current_borrowed_cad), 2)
-        self.assertEqual(df_stats0[df_stats0['date'] == date_not_in_stats]['interest_accrued_cad'].values[0],
+        self.assertEqual(df_stats0[df_stats0['date'] == date_not_in_stats]['interest_cad'].values[0],
                          curr_interest_accrued, 'Interest in new row appended incorrect')
 
     def test_accrued_interest(self):
         loan.set_test_mode('loans_11.csv')
         loan.init_loans()
         df_stats0 = loan.Loan.active_loans[0].stats
-        stats_interest = df_stats0[df_stats0['date'] == pd.to_datetime('2019-12-01')]['interest_accrued_cad'].values[0]
+        stats_interest = df_stats0[df_stats0['date'] == pd.to_datetime('2019-12-01')]['interest_cad'].values[0]
         self.assertEqual(3.29, stats_interest, "Should be 3.29 interest")
-        stats_interest = df_stats0[df_stats0['date'] == pd.to_datetime('2019-12-04')]['interest_accrued_cad'].values[0]
+        stats_interest = df_stats0[df_stats0['date'] == pd.to_datetime('2019-12-04')]['interest_cad'].values[0]
         self.assertEqual(13.16, stats_interest, "Should be 13.16 interest")
-        stats_interest = df_stats0[df_stats0['date'] == pd.to_datetime('2019-12-05')]['interest_accrued_cad'].values[0]
+        stats_interest = df_stats0[df_stats0['date'] == pd.to_datetime('2019-12-05')]['interest_cad'].values[0]
         self.assertEqual(19.74, stats_interest, "Should be 19.74 interest")
-        stats_interest = df_stats0[df_stats0['date'] == pd.to_datetime('2019-12-06')]['interest_accrued_cad'].values[0]
-        self.assertEqual(26.32, stats_interest, "Should be 26.32 interest")
-        stats_interest = df_stats0[df_stats0['date'] == pd.to_datetime('2019-12-07')]['interest_accrued_cad'].values[0]
+        stats_interest = df_stats0[df_stats0['date'] == pd.to_datetime('2019-12-06')]['interest_cad'].values[0]
+        self.assertEqual(27.96, stats_interest, "Should be 27.96 interest")
+        stats_interest = df_stats0[df_stats0['date'] == pd.to_datetime('2019-12-07')]['interest_cad'].values[0]
         self.assertEqual(36.19, stats_interest, "Should be 36.19 interest")
+        stats_interest = df_stats0[df_stats0['date'] == pd.to_datetime('2019-12-08')]['interest_cad'].values[0]
+        self.assertEqual(44.41, stats_interest, "Should be 44.41 interest")
 
+    def test_here(self):
+        loan.set_test_mode('loans_12.csv')
+        loan.init_loans()
+        # for cdp in loan.Loan.active_loans:
+        #     print('******ID*****:', cdp.id)
+        #     print(cdp.stats)
+        #     print()
+        df_interest = loan.build_interest_dataframe()
+        self.assertEqual(df_interest[df_interest['date'] == '2019-12-01']['borrowed_cad'].values[0],
+                         20000, 'Borrowed cad should be 20000')
+        self.assertEqual(df_interest[df_interest['date'] == '2019-12-02']['borrowed_cad'].values[0],
+                         20000, 'Borrowed cad should be 20000')
+        self.assertEqual(df_interest[df_interest['date'] == '2019-12-03']['borrowed_cad'].values[0],
+                         30000, 'Borrowed cad should be 20000')
+        self.assertEqual(df_interest[df_interest['date'] == '2019-12-05']['borrowed_cad'].values[0],
+                         40000, 'Borrowed cad should be 40000')
+        self.assertEqual(df_interest[df_interest['date'] == '2019-12-06']['borrowed_cad'].values[0],
+                         40000, 'Borrowed cad should be 40000')
+        self.assertEqual(df_interest[df_interest['date'] == '2019-12-06']['borrowed_cad'].values[0],
+                         40000, 'Borrowed cad should be 70000')
+        #
+        self.assertEqual(df_interest[df_interest['date'] == '2019-12-01']['interest_cad'].values[0],
+                         6.58, 'Interest should be 6.58')
+        self.assertEqual(df_interest[df_interest['date'] == '2019-12-02']['interest_cad'].values[0],
+                         13.16, 'Interest should be 13.16')
+        self.assertEqual(df_interest[df_interest['date'] == '2019-12-03']['interest_cad'].values[0],
+                         23.03, 'Interest should be 23.03')
+        self.assertEqual(df_interest[df_interest['date'] == '2019-12-04']['interest_cad'].values[0],
+                         32.90, 'Interest should be 32.90')
+        self.assertEqual(df_interest[df_interest['date'] == '2019-12-05']['interest_cad'].values[0],
+                         46.06, 'Interest should be 46.06')
+        self.assertEqual(df_interest[df_interest['date'] == '2019-12-06']['interest_cad'].values[0],
+                         59.22, 'Interest should be 59.22')
+        self.assertEqual(df_interest[df_interest['date'] == '2019-12-07']['interest_cad'].values[0],
+                         88.83, 'Interest should be 88.83')
+        #
 
 if __name__ == '__main__':
     unittest.main()

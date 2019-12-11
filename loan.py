@@ -39,7 +39,7 @@ class Loan:
         self.stats['borrowed_cad'] = self.populate_borrowed_cad()
         self.stats['collateral_amount'] = self.populate_collateral_amounts()
         self.stats['collateralization_ratio'] = self.calculate_collateralization_ratio()
-        self.stats['interest_accrued_cad'] = self.calculate_interest()
+        self.stats['interest_cad'] = self.calculate_interest()
 
     def populate_borrowed_cad(self):
         borrowed_cad_values = []
@@ -74,14 +74,14 @@ class Loan:
         return ratio_values
 
     def calculate_interest(self):
-        interest = []
+        df_interest = []
         start_date = datetime.datetime(self.start_date.year, self.start_date.month, self.start_date.day)
-        interest_accrued = 0
+        interest = 0
         for _, row in self.stats[::-1].iterrows():
             daily_interest = DAILY_INTEREST * row['borrowed_cad']
-            interest_accrued += daily_interest
-            interest.insert(0, round(interest_accrued, 2))
-        return interest
+            interest += daily_interest
+            df_interest.insert(0, round(interest, 2))
+        return df_interest
 
     def update_stats_with_current_price(self, date_to_update, usd_price):
         if self.date_to_update_is_not_in_stats(date_to_update):
@@ -106,7 +106,7 @@ class Loan:
                                 'borrowed_cad': [self.current_borrowed_cad],
                                 'collateral_amount': [self.current_collateral],
                                 'collateralization_ratio': [ratio],
-                                'interest_accrued_cad': [interest]})
+                                'interest_cad': [interest]})
         self.stats = pd.concat([new_row, self.stats]).reset_index(drop=True)
 
     def calculate_new_row_cad_price(self, date_to_update, usd_price):
@@ -122,8 +122,8 @@ class Loan:
         self.stats.loc[self.stats['date'] == date_to_update, 'collateralization_ratio'] = current_ratio
 
     def calculate_new_row_interest(self):
-        interest_accumulated = self.stats.iloc[0]['interest_accrued_cad']
-        return interest_accumulated + (DAILY_INTEREST * self.current_borrowed_cad)
+        interest_accumulated = self.stats.iloc[0]['interest_cad']
+        return round(interest_accumulated + (DAILY_INTEREST * self.current_borrowed_cad), 2)
 
     def __str__(self):
         return 'Loan_id:{:0>2d}, current_borrowed:${:6d}, current_collateral:{}, start_date:{} ' \
@@ -258,7 +258,7 @@ def build_interest_dataframe():
         borrowed_sum = interest_sum = 0
         for cdp in active_loans:
             borrowed_sum += cdp.stats[cdp.stats['date'] == curr_date]['borrowed_cad'].values[0]
-            interest_sum += cdp.stats[cdp.stats['date'] == curr_date]['interest_accrued_cad'].values[0]
+            interest_sum += cdp.stats[cdp.stats['date'] == curr_date]['interest_cad'].values[0]
         dates.append(curr_date)
         interest_cad.append(round(interest_sum, 2))
         borrowed.append(round(borrowed_sum, 2))
@@ -266,10 +266,10 @@ def build_interest_dataframe():
         for cdp in Loan.active_loans:
             if curr_date == cdp.start_date:
                 active_loans.add(cdp)
-                for x in active_loans: print(x)
+                # for x in active_loans: print(x)
     return pd.DataFrame({'date': dates,
-                         'btc_cad_price': btc_cad_price,
+                         'btc_price_cad': btc_cad_price,
                          'borrowed_cad': borrowed,
-                         'interest_accrued_cad': interest_cad})
+                         'interest_cad': interest_cad})
 
 
