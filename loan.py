@@ -203,7 +203,8 @@ def create_loan_instances():
 def new_loan_entry_is_valid(active_loans, csv_entry):
     for cdp in active_loans:
         if csv_entry['wallet_address'] == cdp.wallet_address:
-            raise InvalidLoanData('Trying to create a loan that already exists.')
+            raise InvalidLoanData('Trying to create a loan that already '
+                                  'exists:{}'.format(cdp.wallet_address))
     return True
 
 
@@ -247,8 +248,9 @@ def build_interest_dataframe():
     for cdp in Loan.active_loans:
         if cdp.start_date == oldest_cdp: active_loans.add(cdp)
     curr_date = pd.to_datetime(oldest_cdp)
+    dates = []
     borrowed = []
-    interest = []
+    interests = []
     last_day_in_stats = Loan.active_loans[0].stats.iloc[0]['date']
     while curr_date != (last_day_in_stats + datetime.timedelta(days=1)):
         borrowed_sum = 0
@@ -258,7 +260,8 @@ def build_interest_dataframe():
             interest_sum += cdp.stats[cdp.stats['date'] == curr_date]['interest_accrued_cad'].values[0]
             print('#:{} - date:{}\t adding:{}, borrowed_sum:{}'.format(cdp.id, curr_date, cdp.stats[cdp.stats['date'] == curr_date]['borrowed_cad'].values[0], borrowed_sum))
             print('#:{} - date:{}\t adding:{}, interest_sum:{}'.format(cdp.id, curr_date, cdp.stats[cdp.stats['date'] == curr_date]['interest_accrued_cad'].values[0], interest_sum))
-        interest.append(round(interest_sum, 2))
+        dates.append(curr_date)
+        interests.append(round(interest_sum, 2))
         borrowed.append(round(borrowed_sum, 2))
         curr_date += datetime.timedelta(days=1)
         print('****************')
@@ -271,11 +274,10 @@ def build_interest_dataframe():
                 for x in active_loans: print(x)
 
     print('\n\n****FINAL LISTS:****')
-    print('interest:', interest)
+    print('interest:', interests)
     print('borrowed:', borrowed)
-    print('interest size:', len(interest))
+    print('interest size:', len(interests))
     print('borrowed size:', len(borrowed))
+    return pd.DataFrame({'date': dates, 'borrowed_cad': borrowed, 'interest_accrued_cad': interests})
 
-
-        # interest = [cdp.for cdp in active_loans : cdp.
 
