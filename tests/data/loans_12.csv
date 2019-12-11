@@ -1,0 +1,8 @@
+num,type,wallet_address,collateral_amount,start_date,cad_borrowed,date_update
+1,0,aaaaaaaaaaaaaaaaaaa,2.0,2019-12-01,10000,2019-12-01
+2,0,bbbbbbbbbbbbbbbbbbb,2.0,2019-12-01,10000,2019-12-01
+3,0,ccccccccccccccccccc,2.0,2019-12-03,10000,2019-12-03
+4,0,ddddddddddddddddddd,2.0,2019-12-05,10000,2019-12-05
+5,0,eeeeeeeeeeeeeeeeeee,2.0,2019-12-07,10000,2019-12-07
+6,0,fffffffffffffffffff,2.0,2019-12-07,20000,2019-12-07
+3,3,ccccccccccccccccccc,2.0,2019-12-03,20000,2019-12-07

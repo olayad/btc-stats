@@ -1,0 +1,14 @@
+num,type,wallet_address,collateral_amount,start_date,cad_borrowed,date_update
+1,0,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,10.0,2019-11-01,1000,2019-11-01
+2,2,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,3.0,2019-11-01,1000,2019-11-05
+3,1,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,1.0,2019-11-01,1000,2019-11-10
+4,2,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,4.0,2019-11-01,1000,2019-11-21
+5,3,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,4.0,2019-11-01,2000,2019-11-22
+5,0,3bbbvpyq54FtTxidRv8v7R47odqAp2Nbbb,10.0,2019-11-01,1000,2019-11-01
+6,2,3bbbvpyq54FtTxidRv8v7R47odqAp2Nbbb,5.0,2019-11-01,1000,2019-11-10
+7,1,3bbbvpyq54FtTxidRv8v7R47odqAp2Nbbb,5.0,2019-11-01,1000,2019-11-20
+7,3,3bbbvpyq54FtTxidRv8v7R47odqAp2Nbbb,5.0,2019-11-01,5000,2019-11-20
+
+
+
+
