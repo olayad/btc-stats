@@ -267,9 +267,24 @@ def build_interest_dataframe():
             if curr_date == cdp.start_date:
                 active_loans.add(cdp)
                 # for x in active_loans: print(x)
-    return pd.DataFrame({'date': dates,
-                         'btc_price_cad': btc_cad_price,
-                         'borrowed_cad': borrowed,
-                         'interest_cad': interest_cad})
+    df_interest = pd.DataFrame({'date': dates,
+                                'btc_price_cad': btc_cad_price,
+                                'borrowed_cad': borrowed,
+                                'interest_cad': interest_cad})
 
+    df_interest['interest_btc'] = calculate_interest_in_btc(df_interest)
+    df_interest['borrowed_btc'] = calculate_borrowed_in_btc(df_interest)
+    return df_interest
+
+def calculate_interest_in_btc(df_interest):
+    interest_btc = []
+    for _, row in df_interest.iterrows():
+        interest_btc.append(round((row['interest_cad'] / row['btc_price_cad']), 4))
+    return interest_btc
+
+def calculate_borrowed_in_btc(df_interest):
+    borrowed_btc = []
+    for _, row in df_interest.iterrows():
+        borrowed_btc.append(round((row['borrowed_cad'] / row['btc_price_cad']), 4))
+    return borrowed_btc
 
