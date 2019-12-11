@@ -238,18 +238,44 @@ def update_ratios_with_current_price(date_given=0, price_given=0):
 
 def build_interest_dataframe():
     active_loans = set()
-    inactive_loans = set()
-    for cdp in Loan.active_loans: inactive_loans.add(cdp)
+    # inactive_loans = set()
+    # for cdp in Loan.active_loans: inactive_loans.add(cdp)
     # find oldest loans, move to active_set
     oldest_cdp = datetime.datetime.today().date()
     for cdp in Loan.active_loans:
         if cdp.start_date < oldest_cdp: oldest_cdp = cdp.start_date
     for cdp in Loan.active_loans:
-        if cdp.start_date == oldest_cdp:
-            inactive_loans.remove(cdp)
-            active_loans.add(cdp)
-    print('active_set:')
-    for x in active_loans: print(x)
-    print()
-    print('inactive_set:')
-    for x in inactive_loans: print(x)
+        if cdp.start_date == oldest_cdp: active_loans.add(cdp)
+    curr_date = pd.to_datetime(oldest_cdp)
+    borrowed = []
+    interest = []
+    last_day_in_stats = Loan.active_loans[0].stats.iloc[0]['date']
+    while curr_date != (last_day_in_stats + datetime.timedelta(days=1)):
+        borrowed_sum = 0
+        interest_sum = 0
+        for cdp in active_loans:
+            borrowed_sum += cdp.stats[cdp.stats['date'] == curr_date]['borrowed_cad'].values[0]
+            interest_sum += cdp.stats[cdp.stats['date'] == curr_date]['interest_accrued_cad'].values[0]
+            print('#:{} - date:{}\t adding:{}, borrowed_sum:{}'.format(cdp.id, curr_date, cdp.stats[cdp.stats['date'] == curr_date]['borrowed_cad'].values[0], borrowed_sum))
+            print('#:{} - date:{}\t adding:{}, interest_sum:{}'.format(cdp.id, curr_date, cdp.stats[cdp.stats['date'] == curr_date]['interest_accrued_cad'].values[0], interest_sum))
+        interest.append(round(interest_sum, 2))
+        borrowed.append(round(borrowed_sum, 2))
+        curr_date += datetime.timedelta(days=1)
+        print('****************')
+        print('\nnew date:{}'.format(curr_date))
+        for cdp in Loan.active_loans:
+            if curr_date == cdp.start_date:
+                active_loans.add(cdp)
+                print('added new loan to active list, id:{}, start_date:{}, date (should match with other date):{}'.format(cdp.id, cdp.start_date, curr_date))
+                print('new active_loan list:')
+                for x in active_loans: print(x)
+
+    print('\n\n****FINAL LISTS:****')
+    print('interest:', interest)
+    print('borrowed:', borrowed)
+    print('interest size:', len(interest))
+    print('borrowed size:', len(borrowed))
+
+
+        # interest = [cdp.for cdp in active_loans : cdp.
+
