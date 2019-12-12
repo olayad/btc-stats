@@ -44,6 +44,9 @@ def get_fx_cadusd_rates(start_date, end_date=str(datetime.date.today())):
         observations = strip_payload(json_response)
     api_data = [{'start_date': start_date, 'end_date': end_date}, observations]
     fx_rates = fill_missing_day_rates(api_data)
+    # print('observations', observations)
+    # print('fx_rates:', len(fx_rates))
+    # print('api_data', api_data)
     return fx_rates
 
 
@@ -90,15 +93,15 @@ def fill_missing_day_rates(rates):
         curr = curr + datetime.timedelta(days=1)
         if curr > end_date:
             break
-    result = add_extra_rate_if_past_16hrs_pst(result)
+    result = add_extra_rate_if_past_17hrs_pst(result)
     return result
 
 
-def add_extra_rate_if_past_16hrs_pst(result):
+def add_extra_rate_if_past_17hrs_pst(result):
     # At 4pm PST, Kraken closes the day and starts reporting on the next one where
     # Bank of Canada does not, following extra rate allows for that.
     now_hour = datetime.datetime.now().hour
-    if now_hour >= 16:
+    if now_hour >= 17:
         result.append(AVG_FXCADUSD)
     return result
 

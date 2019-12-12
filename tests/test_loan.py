@@ -200,21 +200,21 @@ class TestLoan(unittest.TestCase):
         loan.set_test_mode('loans_8.csv')
         loan.init_loans()
         df_stats0 = loan.Loan.active_loans[0].stats
-        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0],
-                         2.04, 'Should be 2.04 in collateralization_ratio')
-        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-02']['collateralization_ratio'].values[0],
-                         3.08, 'Should be 3.08 in collateralization_ratio')
-        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-03']['collateralization_ratio'].values[0],
-                         2.54, 'Should be 2.54 in collateralization_ratio')
-        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-04']['collateralization_ratio'].values[0],
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0], 1),
+                         2.0, 'Should be 2.0 in collateralization_ratio')
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-02']['collateralization_ratio'].values[0], 1),
+                         3.1, 'Should be 3.1 in collateralization_ratio')
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-03']['collateralization_ratio'].values[0], 1),
+                         2.5, 'Should be 2.5 in collateralization_ratio')
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-04']['collateralization_ratio'].values[0], 1),
                          2.4, 'Should be 2.4 in collateralization_ratio')
-
+    #
     def test_updating_ratio_with_current_price(self):
         loan.set_test_mode('loans_9.csv')
         loan.init_loans()
         df_stats0 = loan.Loan.active_loans[0].stats
-        self.assertEqual(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0],
-                         2.04, 'Should be 2.04 in collateralization_ratio')
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0], 1),
+                         2.0, 'Should be 2.0 in collateralization_ratio')
         loan.update_ratios_with_current_price(price_given=123456.0)
         date_to_update = tools.get_current_date_for_exchange_api()
         self.assertEqual(df_stats0[df_stats0['date'] == date_to_update]['usd_price'].values[0],
@@ -240,7 +240,7 @@ class TestLoan(unittest.TestCase):
         curr_interest_accrued = round(prev_interest_accrued + (loan.DAILY_INTEREST * loan0.current_borrowed_cad), 2)
         self.assertEqual(df_stats0[df_stats0['date'] == date_not_in_stats]['interest_cad'].values[0],
                          curr_interest_accrued, 'Interest in new row appended incorrect')
-
+    #
     def test_accrued_interest(self):
         loan.set_test_mode('loans_11.csv')
         loan.init_loans()
@@ -258,42 +258,48 @@ class TestLoan(unittest.TestCase):
         stats_interest = df_stats0[df_stats0['date'] == pd.to_datetime('2019-12-08')]['interest_cad'].values[0]
         self.assertEqual(44.41, stats_interest, "Should be 44.41 interest")
 
-    def test_here(self):
+    def test_debt_dataframe(self):
         loan.set_test_mode('loans_12.csv')
         loan.init_loans()
         # for cdp in loan.Loan.active_loans:
         #     print('******ID*****:', cdp.id)
         #     print(cdp.stats)
         #     print()
-        df_interest = loan.build_interest_dataframe()
-        self.assertEqual(df_interest[df_interest['date'] == '2019-12-01']['borrowed_cad'].values[0],
+        df_debt = loan.build_debt_dataframe()
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-01']['borrowed_cad'].values[0],
                          20000, 'Borrowed cad should be 20000')
-        self.assertEqual(df_interest[df_interest['date'] == '2019-12-02']['borrowed_cad'].values[0],
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-02']['borrowed_cad'].values[0],
                          20000, 'Borrowed cad should be 20000')
-        self.assertEqual(df_interest[df_interest['date'] == '2019-12-03']['borrowed_cad'].values[0],
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-03']['borrowed_cad'].values[0],
                          30000, 'Borrowed cad should be 20000')
-        self.assertEqual(df_interest[df_interest['date'] == '2019-12-05']['borrowed_cad'].values[0],
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-05']['borrowed_cad'].values[0],
                          40000, 'Borrowed cad should be 40000')
-        self.assertEqual(df_interest[df_interest['date'] == '2019-12-06']['borrowed_cad'].values[0],
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-06']['borrowed_cad'].values[0],
                          40000, 'Borrowed cad should be 40000')
-        self.assertEqual(df_interest[df_interest['date'] == '2019-12-06']['borrowed_cad'].values[0],
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-06']['borrowed_cad'].values[0],
                          40000, 'Borrowed cad should be 70000')
-        #
-        self.assertEqual(df_interest[df_interest['date'] == '2019-12-01']['interest_cad'].values[0],
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-01']['interest_cad'].values[0],
                          6.58, 'Interest should be 6.58')
-        self.assertEqual(df_interest[df_interest['date'] == '2019-12-02']['interest_cad'].values[0],
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-02']['interest_cad'].values[0],
                          13.16, 'Interest should be 13.16')
-        self.assertEqual(df_interest[df_interest['date'] == '2019-12-03']['interest_cad'].values[0],
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-03']['interest_cad'].values[0],
                          23.03, 'Interest should be 23.03')
-        self.assertEqual(df_interest[df_interest['date'] == '2019-12-04']['interest_cad'].values[0],
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-04']['interest_cad'].values[0],
                          32.90, 'Interest should be 32.90')
-        self.assertEqual(df_interest[df_interest['date'] == '2019-12-05']['interest_cad'].values[0],
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-05']['interest_cad'].values[0],
                          46.06, 'Interest should be 46.06')
-        self.assertEqual(df_interest[df_interest['date'] == '2019-12-06']['interest_cad'].values[0],
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-06']['interest_cad'].values[0],
                          59.22, 'Interest should be 59.22')
-        self.assertEqual(df_interest[df_interest['date'] == '2019-12-07']['interest_cad'].values[0],
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-07']['interest_cad'].values[0],
                          88.83, 'Interest should be 88.83')
-        #
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-01']['interest_btc'].values[0],
+                         0.0007, 'Interest should be .0007')
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-07']['interest_btc'].values[0],
+                         0.0089, 'Interest should be .0089')
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-01']['borrowed_btc'].values[0],
+                         2.0739, 'Interest should be 2.0739')
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-07']['borrowed_btc'].values[0],
+                         8.9980, 'Interest should be 8.9980')
 
 if __name__ == '__main__':
     unittest.main()
