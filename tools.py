@@ -100,6 +100,7 @@ def fill_missing_day_rates(rates):
 def add_extra_rate_if_past_17hrs_pst(result):
     # At 4pm PST, Kraken closes the day and starts reporting on the next one where
     # Bank of Canada does not, following extra rate allows for that.
+    # TODO: need to make this more portable, use timezones?
     now_hour = datetime.datetime.now().hour
     if now_hour >= 17:
         result.append(AVG_FXCADUSD)

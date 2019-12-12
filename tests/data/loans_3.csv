@@ -1,4 +1,4 @@
-num,type,wallet_address,collateral_amount,start_date,cad_borrowed,date_update
+num,type,wallet_address,collateral_amount,start_date,debt_cad,date_update
 1,0,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,1.0,2019-10-01,10000,2019-10-01
 2,1,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,2.0,2019-10-01,10000,2019-10-15
 3,0,3bbbvpyq54FtTxidRv8v7R47odqAp2Nbbb,1.0,2019-11-01,20000,2019-11-01

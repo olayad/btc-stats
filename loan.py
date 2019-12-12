@@ -22,9 +22,9 @@ class Loan:
     def __init__(self, start_date, wallet_address):
         self.stats = pd.DataFrame()
         self.collateral_history = {}    # {date:{'type': _ , 'amount': _}
-        self.borrowed_cad_history = {}  # {date: amount}
+        self.debt_history_cad = {}  # {date: amount}
         self.current_collateral = 0
-        self.current_borrowed_cad = 0
+        self.current_debt_cad = 0
         self.start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
         self.wallet_address = wallet_address
         self.id = self.counter
@@ -33,24 +33,24 @@ class Loan:
     def calculate_loan_stats(self):
         loan_start_date = pd.Timestamp(self.start_date)
         self.stats['date'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= loan_start_date]['Date']
-        self.stats['usd_price'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= loan_start_date]['Last']
+        self.stats['btc_price_usd'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= loan_start_date]['Last']
         # print(self.stats)
         # print('date len', len(self.stats['date']))
         self.stats['fx_cadusd'] = tools.get_fx_cadusd_rates(str(self.start_date))
-        self.stats['cad_price'] = [round(row['usd_price'] / float(row['fx_cadusd']), 2) for _, row in self.stats.iterrows()]
-        self.stats['borrowed_cad'] = self.populate_borrowed_cad()
+        self.stats['btc_price_cad'] = [round(row['btc_price_usd'] / float(row['fx_cadusd']), 2) for _, row in self.stats.iterrows()]
+        self.stats['debt_cad'] = self.populate_borrowed_cad()
         self.stats['collateral_amount'] = self.populate_collateral_amounts()
         self.stats['collateralization_ratio'] = self.calculate_collateralization_ratio()
         self.stats['interest_cad'] = self.calculate_interest()
 
     def populate_borrowed_cad(self):
         borrowed_cad_values = []
-        dates_which_had_borrowed_cad_update = list(self.borrowed_cad_history.keys())
-        curr_borrowed = self.current_borrowed_cad
+        dates_which_had_borrowed_cad_update = list(self.debt_history_cad.keys())
+        curr_borrowed = self.current_debt_cad
         for index, row in self.stats.iterrows():
             borrowed_cad_values.append(curr_borrowed)
             if row['date'] in dates_which_had_borrowed_cad_update:
-                curr_borrowed -= self.borrowed_cad_history[row['date']]
+                curr_borrowed -= self.debt_history_cad[row['date']]
                 dates_which_had_borrowed_cad_update.pop()
         return borrowed_cad_values
 
@@ -71,7 +71,7 @@ class Loan:
     def calculate_collateralization_ratio(self):
         ratio_values = []
         for _, row in self.stats.iterrows():
-            ratio = round((row['cad_price'] * row['collateral_amount']) / row['borrowed_cad'], 2)
+            ratio = round((row['btc_price_cad'] * row['collateral_amount']) / row['debt_cad'], 2)
             ratio_values.append(ratio)
         return ratio_values
 
@@ -80,56 +80,56 @@ class Loan:
         start_date = datetime.datetime(self.start_date.year, self.start_date.month, self.start_date.day)
         interest = 0
         for _, row in self.stats[::-1].iterrows():
-            daily_interest = DAILY_INTEREST * row['borrowed_cad']
+            daily_interest = DAILY_INTEREST * row['debt_cad']
             interest += daily_interest
             df_interest.insert(0, round(interest, 2))
         return df_interest
 
-    def update_stats_with_current_price(self, date_to_update, usd_price):
+    def update_stats_with_current_price(self, date_to_update, btc_price_usd):
         if self.date_to_update_is_not_in_stats(date_to_update):
-            self.append_new_row_to_stats(date_to_update, usd_price)
-        self.calculate_new_row_cad_price(date_to_update, usd_price)
-        self.calculate_new_row_ratio(date_to_update, usd_price)
+            self.append_new_row_to_stats(date_to_update, btc_price_usd)
+        self.calculate_new_row_cad_price(date_to_update, btc_price_usd)
+        self.calculate_new_row_ratio(date_to_update, btc_price_usd)
 
     def date_to_update_is_not_in_stats(self, date_to_update):
         df_earliest_date = self.stats.iloc[0]['date']
         return df_earliest_date != date_to_update
 
-    def append_new_row_to_stats(self, date_to_update, usd_price):
+    def append_new_row_to_stats(self, date_to_update, btc_price_usd):
         today = datetime.datetime.now().strftime('%Y-%m-%d')
         fx_rate = float(tools.get_fx_cadusd_rates(start_date=today)[0])
-        cad_price = round(usd_price / fx_rate, 2)
-        ratio = (cad_price * self.current_collateral) / self.current_borrowed_cad
+        btc_price_cad = round(btc_price_usd / fx_rate, 2)
+        ratio = (btc_price_cad * self.current_collateral) / self.current_debt_cad
         interest = self.calculate_new_row_interest()
         new_row = pd.DataFrame({'date': [date_to_update],
-                                'usd_price': [usd_price],
+                                'btc_price_usd': [btc_price_usd],
                                 'fx_cadusd': [fx_rate],
-                                'cad_price': [cad_price],
-                                'borrowed_cad': [self.current_borrowed_cad],
+                                'btc_price_cad': [btc_price_cad],
+                                'debt_cad': [self.current_debt_cad],
                                 'collateral_amount': [self.current_collateral],
                                 'collateralization_ratio': [ratio],
                                 'interest_cad': [interest]})
         self.stats = pd.concat([new_row, self.stats]).reset_index(drop=True)
 
-    def calculate_new_row_cad_price(self, date_to_update, usd_price):
+    def calculate_new_row_cad_price(self, date_to_update, btc_price_usd):
         current_fx = float(self.stats.loc[self.stats['date'] == date_to_update, 'fx_cadusd'].values[0])
-        self.stats.loc[self.stats['date'] == date_to_update, 'usd_price'] = usd_price
-        self.stats.loc[self.stats['date'] == date_to_update, 'cad_price'] = usd_price / current_fx
+        self.stats.loc[self.stats['date'] == date_to_update, 'btc_price_usd'] = btc_price_usd
+        self.stats.loc[self.stats['date'] == date_to_update, 'btc_price_cad'] = btc_price_usd / current_fx
 
-    def calculate_new_row_ratio(self, date_to_update, usd_price):
-        cad_price = self.stats.loc[self.stats['date'] == date_to_update, 'cad_price']
+    def calculate_new_row_ratio(self, date_to_update, btc_price_usd):
+        btc_price_cad = self.stats.loc[self.stats['date'] == date_to_update, 'btc_price_cad']
         collateral_amount = self.stats.loc[self.stats['date'] == date_to_update, 'collateral_amount']
-        borrowed_cad = self.stats.loc[self.stats['date'] == date_to_update, 'borrowed_cad']
-        current_ratio = round((cad_price * collateral_amount) / borrowed_cad, 2)
+        debt_cad = self.stats.loc[self.stats['date'] == date_to_update, 'debt_cad']
+        current_ratio = round((btc_price_cad * collateral_amount) / debt_cad, 2)
         self.stats.loc[self.stats['date'] == date_to_update, 'collateralization_ratio'] = current_ratio
 
     def calculate_new_row_interest(self):
         interest_accumulated = self.stats.iloc[0]['interest_cad']
-        return round(interest_accumulated + (DAILY_INTEREST * self.current_borrowed_cad), 2)
+        return round(interest_accumulated + (DAILY_INTEREST * self.current_debt_cad), 2)
 
     def __str__(self):
-        return 'Loan_id:{:0>2d}, current_borrowed:${:6d}, current_collateral:{}, start_date:{} ' \
-               ''.format(self.id, self.current_borrowed_cad, self.current_collateral, self.start_date)
+        return 'Loan_id:{:0>2d}, current_debt:${:6d}, current_collateral:{}, start_date:{} ' \
+               ''.format(self.id, self.current_debt_cad, self.current_collateral, self.start_date)
 
 
 def set_test_mode(test_case):
@@ -229,8 +229,8 @@ def update_collateral_records(loans, csv_entry):
 def update_borrowed_cad_history(loans, csv_entry):
     for cdp in loans:
         if cdp.wallet_address == csv_entry['wallet_address']:
-            cdp.borrowed_cad_history.update({pd.Timestamp(csv_entry['date_update']): csv_entry['cad_borrowed']})
-            cdp.current_borrowed_cad += csv_entry['cad_borrowed']
+            cdp.debt_history_cad.update({pd.Timestamp(csv_entry['date_update']): csv_entry['debt_cad']})
+            cdp.current_debt_cad += csv_entry['debt_cad']
 
 
 def update_ratios_with_current_price(date_given=0, price_given=0):
@@ -242,7 +242,7 @@ def update_ratios_with_current_price(date_given=0, price_given=0):
 def build_debt_dataframe():
     btc_cad_price = []
     interest_cad = []
-    borrowed = []
+    debt = []
     dates = []
     curr_date = pd.to_datetime(find_oldest_active_date())
     loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
@@ -250,17 +250,17 @@ def build_debt_dataframe():
     while curr_date != (most_recent_day_in_stats + datetime.timedelta(days=1)):
         borrowed_sum = interest_sum = 0
         for cdp in loans_generating_interest_at_date:
-            borrowed_sum += cdp.stats[cdp.stats['date'] == curr_date]['borrowed_cad'].values[0]
+            borrowed_sum += cdp.stats[cdp.stats['date'] == curr_date]['debt_cad'].values[0]
             interest_sum += cdp.stats[cdp.stats['date'] == curr_date]['interest_cad'].values[0]
         dates.append(curr_date)
         interest_cad.append(round(interest_sum, 2))
-        borrowed.append(round(borrowed_sum, 2))
+        debt.append(round(borrowed_sum, 2))
         curr_date += datetime.timedelta(days=1)
         loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
 
     df_debt = pd.DataFrame({'date': dates,
                             'btc_price_cad': get_btc_cad_price_data_from_oldest_loan(),
-                            'borrowed_cad': borrowed,
+                            'debt_cad': debt,
                             'interest_cad': interest_cad,})
     df_debt['interest_btc'] = calculate_interest_in_btc(df_debt)
     df_debt['borrowed_btc'] = calculate_borrowed_in_btc(df_debt)
@@ -285,7 +285,7 @@ def get_btc_cad_price_data_from_oldest_loan():
     btc_cad_price = []
     oldest_active = find_oldest_active_date()
     for cdp in Loan.active_loans:
-        if cdp.start_date == oldest_active: btc_cad_price = cdp.stats['cad_price']
+        if cdp.start_date == oldest_active: btc_cad_price = cdp.stats['btc_price_cad']
     return btc_cad_price
 
 
@@ -299,6 +299,6 @@ def calculate_interest_in_btc(df_debt):
 def calculate_borrowed_in_btc(df_debt):
     borrowed_btc = []
     for _, row in df_debt.iterrows():
-        borrowed_btc.append(round((row['borrowed_cad'] / row['btc_price_cad']), 4))
+        borrowed_btc.append(round((row['debt_cad'] / row['btc_price_cad']), 4))
     return borrowed_btc
 

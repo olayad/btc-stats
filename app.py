@@ -7,7 +7,8 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
-from loan import Loan, get_loans, set_test_mode, set_loans_file, update_ratios_with_current_price
+from loan import Loan, get_loans, set_test_mode, set_loans_file,\
+    update_ratios_with_current_price, build_debt_dataframe
 from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable, InvalidLoanData
 import sys
 import argparse
@@ -41,23 +42,49 @@ except InvalidLoanData:
 
 app = dash.Dash()
 app.layout = html.Div([
-    dcc.Interval(id='interval-component', interval=10000, n_intervals=0),
+    dcc.Interval(id='interval_price', interval=10000, n_intervals=0),
+    dcc.Interval(id='interval_debt', interval=86400000, n_intervals=0),  # daily update
 
     html.H1(id='btc_price', children=''),
 
     html.Div([
-        dcc.Graph(id='ratio_graph')
+        dcc.Graph(id='graph_ratio')
+    ]),
+
+    html.Div([
+        dcc.Graph(id='graph_debt_btc')
     ])
 ])
 
+@app.callback([Output('graph_debt_btc', 'figure')],
+              [Input('interval_debt', 'n_intervals')])
+def interval_debt_triggered(n_intervals):
+    return update_graph_debt_btc()
+
+
+def update_graph_debt_btc():
+    df_debt = build_debt_dataframe()
+    data = []
+    # trace = go.Scatter(x=df_debt['date'],
+    #                    y=df_debt[''])
+
+
+
+
+
+
+
+
+
+
 
 @app.callback([Output('btc_price', 'children'),
-               Output('ratio_graph', 'figure')],
-              [Input('interval-component', 'n_intervals')])
-def interval_update_triggered(n_intervals):
+               Output('graph_ratio', 'figure')],
+              [Input('interval_price', 'n_intervals')])
+def interval_price_triggered(n_intervals):
     # TODO: Need to wrap this, to catch Third Party API exception
     price = update_price()
-    figure = update_ratio_graph()
+    figure = update_graph_ratio()
     return price, figure
 
 
@@ -65,13 +92,13 @@ def update_price():
     return 'BTC: '+str(tools.get_usd_price())+' USD'
 
 
-def update_ratio_graph():
+def update_graph_ratio():
     update_ratios_with_current_price()
-    figure = build_ratio_graph()
+    figure = build_graph_ratio()
     return figure
 
 
-def build_ratio_graph():
+def build_graph_ratio():
     data = []
     oldest_start_date = datetime.date.today()
     for loan in Loan.active_loans:
@@ -79,7 +106,7 @@ def build_ratio_graph():
         trace = go.Scatter(x=loan.stats['date'],
                            y=loan.stats['collateralization_ratio'],
                            mode='lines',
-                           name='$'+str(loan.current_borrowed_cad))
+                           name='$'+str(loan.current_debt_cad))
         data.append(trace)
     layout = go.Layout(title='Collateral Coverage Ratio',
                        shapes=[{'type': 'line',
