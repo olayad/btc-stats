@@ -34,6 +34,8 @@ class Loan:
         loan_start_date = pd.Timestamp(self.start_date)
         self.stats['date'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= loan_start_date]['Date']
         self.stats['usd_price'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= loan_start_date]['Last']
+        # print(self.stats)
+        # print('date len', len(self.stats['date']))
         self.stats['fx_cadusd'] = tools.get_fx_cadusd_rates(str(self.start_date))
         self.stats['cad_price'] = [round(row['usd_price'] / float(row['fx_cadusd']), 2) for _, row in self.stats.iterrows()]
         self.stats['borrowed_cad'] = self.populate_borrowed_cad()
@@ -237,54 +239,66 @@ def update_ratios_with_current_price(date_given=0, price_given=0):
     for cdp in Loan.active_loans: cdp.update_stats_with_current_price(pd.Timestamp(date), float(price))
 
 
-def build_interest_dataframe():
-    active_loans = set()
-    oldest_cdp = datetime.datetime.today().date()
-    dates = []
+def build_debt_dataframe():
     btc_cad_price = []
-    borrowed = []
-    interest_btc = []
     interest_cad = []
-    for cdp in Loan.active_loans:
-        if cdp.start_date < oldest_cdp:
-            oldest_cdp = cdp.start_date
-    for cdp in Loan.active_loans:
-        if cdp.start_date == oldest_cdp:
-            active_loans.add(cdp)
-            btc_cad_price = cdp.stats['cad_price']
-    curr_date = pd.to_datetime(oldest_cdp)
-    earliest_day_in_stats = Loan.active_loans[0].stats.iloc[0]['date']
-    while curr_date != (earliest_day_in_stats + datetime.timedelta(days=1)):
+    borrowed = []
+    dates = []
+    curr_date = pd.to_datetime(find_oldest_active_date())
+    loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
+    most_recent_day_in_stats = Loan.active_loans[0].stats.iloc[0]['date']
+    while curr_date != (most_recent_day_in_stats + datetime.timedelta(days=1)):
         borrowed_sum = interest_sum = 0
-        for cdp in active_loans:
+        for cdp in loans_generating_interest_at_date:
             borrowed_sum += cdp.stats[cdp.stats['date'] == curr_date]['borrowed_cad'].values[0]
             interest_sum += cdp.stats[cdp.stats['date'] == curr_date]['interest_cad'].values[0]
         dates.append(curr_date)
         interest_cad.append(round(interest_sum, 2))
         borrowed.append(round(borrowed_sum, 2))
         curr_date += datetime.timedelta(days=1)
-        for cdp in Loan.active_loans:
-            if curr_date == cdp.start_date:
-                active_loans.add(cdp)
-                # for x in active_loans: print(x)
-    df_interest = pd.DataFrame({'date': dates,
-                                'btc_price_cad': btc_cad_price,
-                                'borrowed_cad': borrowed,
-                                'interest_cad': interest_cad})
+        loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
 
-    df_interest['interest_btc'] = calculate_interest_in_btc(df_interest)
-    df_interest['borrowed_btc'] = calculate_borrowed_in_btc(df_interest)
-    return df_interest
+    df_debt = pd.DataFrame({'date': dates,
+                            'btc_price_cad': get_btc_cad_price_data_from_oldest_loan(),
+                            'borrowed_cad': borrowed,
+                            'interest_cad': interest_cad,})
+    df_debt['interest_btc'] = calculate_interest_in_btc(df_debt)
+    df_debt['borrowed_btc'] = calculate_borrowed_in_btc(df_debt)
+    return df_debt
 
-def calculate_interest_in_btc(df_interest):
+
+def find_oldest_active_date():
+    oldest_active = datetime.datetime.today().date()
+    for cdp in Loan.active_loans:
+        if cdp.start_date < oldest_active: oldest_active = cdp.start_date
+    return oldest_active
+
+
+def get_loans_generating_interest_at_date(date):
+    loans_active_at_date = []
+    for cdp in Loan.active_loans:
+        if cdp.start_date <= date: loans_active_at_date.append(cdp)
+    return loans_active_at_date
+
+
+def get_btc_cad_price_data_from_oldest_loan():
+    btc_cad_price = []
+    oldest_active = find_oldest_active_date()
+    for cdp in Loan.active_loans:
+        if cdp.start_date == oldest_active: btc_cad_price = cdp.stats['cad_price']
+    return btc_cad_price
+
+
+def calculate_interest_in_btc(df_debt):
     interest_btc = []
-    for _, row in df_interest.iterrows():
+    for _, row in df_debt.iterrows():
         interest_btc.append(round((row['interest_cad'] / row['btc_price_cad']), 4))
     return interest_btc
 
-def calculate_borrowed_in_btc(df_interest):
+
+def calculate_borrowed_in_btc(df_debt):
     borrowed_btc = []
-    for _, row in df_interest.iterrows():
+    for _, row in df_debt.iterrows():
         borrowed_btc.append(round((row['borrowed_cad'] / row['btc_price_cad']), 4))
     return borrowed_btc
 
