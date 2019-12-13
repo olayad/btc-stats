@@ -52,30 +52,134 @@ app.layout = html.Div([
     ]),
 
     html.Div([
-        dcc.Graph(id='graph_debt_btc')
+        html.Div([
+            dcc.Graph(id='graph_debt_btc')
+        ], style={'width': '50%', 'display': 'inline-block'}),
+
+        html.Div([
+            dcc.Graph(id='graph_debt_cad')
+        ], style={'width': '50%', 'display': 'inline-block'})
     ])
+
 ])
 
-@app.callback([Output('graph_debt_btc', 'figure')],
+
+@app.callback([Output('graph_debt_btc', 'figure'),
+               Output('graph_debt_cad', 'figure')],
               [Input('interval_debt', 'n_intervals')])
 def interval_debt_triggered(n_intervals):
-    return update_graph_debt_btc()
-
+    figure_btc = update_graph_debt_btc()
+    figure_cad = update_graph_debt_cad()
+    return figure_btc, figure_cad
 
 def update_graph_debt_btc():
     df_debt = build_debt_dataframe()
-    data = []
-    # trace = go.Scatter(x=df_debt['date'],
-    #                    y=df_debt[''])
+    trace1 = go.Scatter(x=df_debt['date'],
+                        y=df_debt['debt_btc'],
+                        mode='lines',
+                        name='Debt')
+    trace2 = go.Scatter(x=df_debt['date'],
+                        y=df_debt['interest_btc'],
+                        mode='lines',
+                        name='Interest')
+    trace3 = go.Scatter(x=df_debt['date'],
+                        y=df_debt['total_liab_btc'],
+                        mode='lines',
+                        name='Total Liabilities')
+    data = [trace1, trace2, trace3]
+    layout = go.Layout(title='Liabilities (BTC)',
+                       legend_orientation='h',
+                       showlegend=True,
+                       yaxis_title="BTC",
+                       xaxis={
+                             'rangeselector': {'buttons': [
+                                 {
+                                     "count": 3,
+                                     "label": "3 mo",
+                                     "step": "month",
+                                     "stepmode": "backward"
+                                 },
+                                 {
+                                     "count": 6,
+                                     "label": "6 mo",
+                                     "step": "month",
+                                     "stepmode": "backward"
+                                 },
+                                 {
+                                     "count": 1,
+                                     "label": "1 yr",
+                                     "step": "year",
+                                     "stepmode": "backward"
+                                 },
+                                 {
+                                     "count": 1,
+                                     "label": "YTD",
+                                     "step": "year",
+                                     "stepmode": "todate"
+                                 },
+                                 {"step": "all"}
+                             ]},
+                             'rangeslider': {'visible': True},
+                             'type': 'date',
+                             "autorange": True
+                       })
+    figure = {'data': data, 'layout': layout}
+    return figure
 
 
-
-
-
-
-
-
-
+def update_graph_debt_cad():
+    df_debt = build_debt_dataframe()
+    trace1 = go.Scatter(x=df_debt['date'],
+                        y=df_debt['debt_cad'],
+                        mode='lines',
+                        name='Debt')
+    trace2 = go.Scatter(x=df_debt['date'],
+                        y=df_debt['interest_cad'],
+                        mode='lines',
+                        name='Interest')
+    trace3 = go.Scatter(x=df_debt['date'],
+                        y=df_debt['total_liab_cad'],
+                        mode='lines',
+                        name='Total Liabilities')
+    data = [trace1, trace2, trace3]
+    layout = go.Layout(title='Liabilities (CAD)',
+                       legend_orientation='h',
+                       showlegend=True,
+                       yaxis_title="CAD",
+                       xaxis={
+                             'rangeselector': {'buttons': [
+                                 {
+                                     "count": 3,
+                                     "label": "3 mo",
+                                     "step": "month",
+                                     "stepmode": "backward"
+                                 },
+                                 {
+                                     "count": 6,
+                                     "label": "6 mo",
+                                     "step": "month",
+                                     "stepmode": "backward"
+                                 },
+                                 {
+                                     "count": 1,
+                                     "label": "1 yr",
+                                     "step": "year",
+                                     "stepmode": "backward"
+                                 },
+                                 {
+                                     "count": 1,
+                                     "label": "YTD",
+                                     "step": "year",
+                                     "stepmode": "todate"
+                                 },
+                                 {"step": "all"}
+                             ]},
+                             'rangeslider': {'visible': True},
+                             'type': 'date',
+                             "autorange": True
+                       })
+    figure = {'data': data, 'layout': layout}
+    return figure
 
 
 @app.callback([Output('btc_price', 'children'),
@@ -89,7 +193,10 @@ def interval_price_triggered(n_intervals):
 
 
 def update_price():
-    return 'BTC: '+str(tools.get_usd_price())+' USD'
+    price_usd = tools.get_usd_price()
+    curr_fx_cadusd = float(tools.get_fx_cadusd_rates(datetime.datetime.now().strftime('%Y-%m-%d'))[0])
+    price_cad = int(price_usd / curr_fx_cadusd)
+    return 'BTC: '+str(price_usd)+' USD / '+str(price_cad)+' CAD'
 
 
 def update_graph_ratio():
@@ -115,6 +222,7 @@ def build_graph_ratio():
                                 'line': {'color': 'red', 'width': 2.0, 'dash': 'dot'}}],
                        legend_orientation='h',
                        showlegend=True,
+                       yaxis_title="Ratio",
                        xaxis={
                            'rangeselector': {'buttons':[
                                {
@@ -146,8 +254,7 @@ def build_graph_ratio():
                            'rangeslider': {'visible': True},
                            'type': 'date',
                            "autorange": True
-                       }
-    )
+                       })
     figure = {'data': data, 'layout': layout}
     return figure
 

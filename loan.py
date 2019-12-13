@@ -244,10 +244,11 @@ def build_debt_dataframe():
     interest_cad = []
     debt = []
     dates = []
-    curr_date = pd.to_datetime(find_oldest_active_date())
-    loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
+    oldest_active_loan_date = pd.to_datetime(find_oldest_active_date())
     most_recent_day_in_stats = Loan.active_loans[0].stats.iloc[0]['date']
-    while curr_date != (most_recent_day_in_stats + datetime.timedelta(days=1)):
+    curr_date = most_recent_day_in_stats
+    loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
+    while curr_date != (oldest_active_loan_date - datetime.timedelta(days=1)):
         borrowed_sum = interest_sum = 0
         for cdp in loans_generating_interest_at_date:
             borrowed_sum += cdp.stats[cdp.stats['date'] == curr_date]['debt_cad'].values[0]
@@ -255,15 +256,16 @@ def build_debt_dataframe():
         dates.append(curr_date)
         interest_cad.append(round(interest_sum, 2))
         debt.append(round(borrowed_sum, 2))
-        curr_date += datetime.timedelta(days=1)
+        curr_date -= datetime.timedelta(days=1)
         loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
-
     df_debt = pd.DataFrame({'date': dates,
                             'btc_price_cad': get_btc_cad_price_data_from_oldest_loan(),
                             'debt_cad': debt,
-                            'interest_cad': interest_cad,})
+                            'interest_cad': interest_cad})
+    df_debt['total_liab_cad'] = calculate_total_liabilities_cad(df_debt)
     df_debt['interest_btc'] = calculate_interest_in_btc(df_debt)
-    df_debt['borrowed_btc'] = calculate_borrowed_in_btc(df_debt)
+    df_debt['debt_btc'] = calculate_debt_in_btc(df_debt)
+    df_debt['total_liab_btc'] = calculate_total_liabilities_btc(df_debt)
     return df_debt
 
 
@@ -289,6 +291,13 @@ def get_btc_cad_price_data_from_oldest_loan():
     return btc_cad_price
 
 
+def calculate_total_liabilities_cad(df_debt):
+    liabilities_cad = []
+    for _, row in df_debt.iterrows():
+        liabilities_cad.append(round((row['debt_cad'] + row['interest_cad']), 4))
+    return liabilities_cad
+
+
 def calculate_interest_in_btc(df_debt):
     interest_btc = []
     for _, row in df_debt.iterrows():
@@ -296,9 +305,15 @@ def calculate_interest_in_btc(df_debt):
     return interest_btc
 
 
-def calculate_borrowed_in_btc(df_debt):
-    borrowed_btc = []
+def calculate_debt_in_btc(df_debt):
+    debt_btc = []
     for _, row in df_debt.iterrows():
-        borrowed_btc.append(round((row['debt_cad'] / row['btc_price_cad']), 4))
-    return borrowed_btc
+        debt_btc.append(round((row['debt_cad'] / row['btc_price_cad']), 4))
+    return debt_btc
 
+
+def calculate_total_liabilities_btc(df_debt):
+    liabilities_btc = []
+    for _, row in df_debt.iterrows():
+        liabilities_btc.append(round((row['debt_btc'] + row['interest_btc']), 4))
+    return liabilities_btc
