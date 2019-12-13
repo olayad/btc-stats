@@ -34,8 +34,6 @@ class Loan:
         loan_start_date = pd.Timestamp(self.start_date)
         self.stats['date'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= loan_start_date]['Date']
         self.stats['btc_price_usd'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= loan_start_date]['Last']
-        # print(self.stats)
-        # print('date len', len(self.stats['date']))
         self.stats['fx_cadusd'] = tools.get_fx_cadusd_rates(str(self.start_date))
         self.stats['btc_price_cad'] = [round(row['btc_price_usd'] / float(row['fx_cadusd']), 2) for _, row in self.stats.iterrows()]
         self.stats['debt_cad'] = self.populate_borrowed_cad()

@@ -193,7 +193,7 @@ def interval_price_triggered(n_intervals):
 
 
 def update_price():
-    price_usd = tools.get_usd_price()
+    price_usd = float(tools.get_usd_price())
     curr_fx_cadusd = float(tools.get_fx_cadusd_rates(datetime.datetime.now().strftime('%Y-%m-%d'))[0])
     price_cad = int(price_usd / curr_fx_cadusd)
     return 'BTC: '+str(price_usd)+' USD / '+str(price_cad)+' CAD'

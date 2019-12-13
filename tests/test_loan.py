@@ -237,8 +237,8 @@ class TestLoan(unittest.TestCase):
                          price, 'Should be the price in the new stats entry')
         loan0 = loan.Loan.active_loans[0]
         prev_interest_accrued = df_stats0.iloc[1]['interest_cad']
-        curr_interest_accrued = round(prev_interest_accrued + (loan.DAILY_INTEREST * loan0.current_debt_cad), 2)
-        self.assertEqual(df_stats0[df_stats0['date'] == date_not_in_stats]['interest_cad'].values[0],
+        curr_interest_accrued = round(prev_interest_accrued + (loan.DAILY_INTEREST * loan0.current_debt_cad), 1)
+        self.assertEqual(round(df_stats0[df_stats0['date'] == date_not_in_stats]['interest_cad'].values[0], 1),
                          curr_interest_accrued, 'Interest in new row appended incorrect')
     #
     def test_accrued_interest(self):
@@ -261,10 +261,6 @@ class TestLoan(unittest.TestCase):
     def test_debt_dataframe(self):
         loan.set_test_mode('loans_12.csv')
         loan.init_loans()
-        # for cdp in loan.Loan.active_loans:
-        #     print('******ID*****:', cdp.id)
-        #     print(cdp.stats)
-        #     print()
         df_debt = loan.build_debt_dataframe()
         self.assertEqual(df_debt[df_debt['date'] == '2019-12-01']['debt_cad'].values[0],
                          20000, 'Debt cad should be 20000')
@@ -296,11 +292,22 @@ class TestLoan(unittest.TestCase):
                          0.0007, 'Interest should be .0007')
         self.assertEqual(df_debt[df_debt['date'] == '2019-12-07']['interest_btc'].values[0],
                          0.0089, 'Interest should be .0089')
-        self.assertEqual(df_debt[df_debt['date'] == '2019-12-01']['borrowed_btc'].values[0],
-                         2.0739, 'Interest should be 2.0739')
-        self.assertEqual(df_debt[df_debt['date'] == '2019-12-07']['borrowed_btc'].values[0],
-                         8.9980, 'Interest should be 8.9980')
-        # print(df_debt)
+        self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-01']['debt_btc'].values[0], 1),
+                         2.1, 'Interest should be 2.1')     # fixed already
+        self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-07']['debt_btc'].values[0], 1),
+                         9.0, 'Interest should be 9.0')
+        df_stats0 = loan.Loan.active_loans[0].stats
+        btc_price_stats = df_stats0[df_stats0['date'] == '2019-12-01']['btc_price_cad'].values[0]
+        btc_price_debt = df_debt[df_debt['date'] == '2019-12-01']['btc_price_cad'].values[0]
+        self.assertEqual(btc_price_debt, btc_price_stats, 'BTC price is not equal in both dataframes')
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-01']['total_liab_cad'].values[0],
+                         20006.58, 'Total liabilities CAD do not match')
+        self.assertEqual(df_debt[df_debt['date'] == '2019-12-07']['total_liab_cad'].values[0],
+                         90088.83, 'Total liabilities CAD do not match')
+        self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-01']['total_liab_btc'].values[0], 2),
+                         2.05, 'Total liabilities BTC do not match')    # fixed already
+        self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-07']['total_liab_btc'].values[0], 2),
+                         9.05, 'Total liabilities BTC do not match')
 
 if __name__ == '__main__':
     unittest.main()
