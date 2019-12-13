@@ -18,6 +18,7 @@ class Loan:
     active_loans = []
     df_loans = None
     df_btcusd = None
+    df_debt = None
 
     def __init__(self, start_date, wallet_address):
         self.stats = pd.DataFrame()
@@ -150,6 +151,7 @@ def init_loans():
     load_dataframes()
     Loan.active_loans = create_loan_instances()
     for loan in Loan.active_loans: loan.calculate_loan_stats()
+    Loan.df_debt = build_debt_dataframe()
 
 
 def load_dataframes():
@@ -231,7 +233,7 @@ def update_borrowed_cad_history(loans, csv_entry):
             cdp.current_debt_cad += csv_entry['debt_cad']
 
 
-def update_ratios_with_current_price(date_given=0, price_given=0):
+def update_loans_with_current_price(date_given=0, price_given=0):
     date = tools.get_current_date_for_exchange_api() if not date_given else date_given
     price = price_given if price_given else tools.get_usd_price()
     for cdp in Loan.active_loans: cdp.update_stats_with_current_price(pd.Timestamp(date), float(price))
@@ -315,3 +317,7 @@ def calculate_total_liabilities_btc(df_debt):
     for _, row in df_debt.iterrows():
         liabilities_btc.append(round((row['debt_btc'] + row['interest_btc']), 4))
     return liabilities_btc
+
+
+def update_debt_df_with_current_price():
+    pass

@@ -215,7 +215,7 @@ class TestLoan(unittest.TestCase):
         df_stats0 = loan.Loan.active_loans[0].stats
         self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0], 1),
                          2.0, 'Should be 2.0 in collateralization_ratio')
-        loan.update_ratios_with_current_price(price_given=123456.0)
+        loan.update_loans_with_current_price(price_given=123456.0)
         date_to_update = tools.get_current_date_for_exchange_api()
         self.assertEqual(df_stats0[df_stats0['date'] == date_to_update]['btc_price_usd'].values[0],
                          123456.0, 'Should be 123456.0 in btc_price_usd')
@@ -231,7 +231,7 @@ class TestLoan(unittest.TestCase):
         loan.init_loans()
         date_not_in_stats = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
         price = 123456.0
-        loan.update_ratios_with_current_price(date_given=date_not_in_stats, price_given=price)
+        loan.update_loans_with_current_price(date_given=date_not_in_stats, price_given=price)
         df_stats0 = loan.Loan.active_loans[0].stats
         self.assertEqual(df_stats0[df_stats0['date'] == date_not_in_stats]['btc_price_usd'].values[0],
                          price, 'Should be the price in the new stats entry')
@@ -261,7 +261,8 @@ class TestLoan(unittest.TestCase):
     def test_debt_dataframe(self):
         loan.set_test_mode('loans_12.csv')
         loan.init_loans()
-        df_debt = loan.build_debt_dataframe()
+        df_debt = loan.Loan.df_debt
+        print(df_debt)
         self.assertEqual(df_debt[df_debt['date'] == '2019-12-01']['debt_cad'].values[0],
                          20000, 'Debt cad should be 20000')
         self.assertEqual(df_debt[df_debt['date'] == '2019-12-02']['debt_cad'].values[0],

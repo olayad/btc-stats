@@ -8,13 +8,14 @@ import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 from loan import Loan, get_loans, set_test_mode, set_loans_file,\
-    update_ratios_with_current_price, build_debt_dataframe
+    update_loans_with_current_price, build_debt_dataframe, update_debt_df_with_current_price
 from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable, InvalidLoanData
 import sys
 import argparse
 import tools
 
 loans = None
+# df_debt = None
 
 parser = argparse.ArgumentParser(description='CDP stats server.')
 
@@ -29,6 +30,7 @@ if args.file:
 
 try:
     loans = get_loans()
+    # df_debt = build_debt_dataframe()
 except InitializationDataNotFound:
     print('[ERROR] Validate \'loan.csv\' and \'btcusd.csv\' files are available' +
           ' in \'/data/\' dir. Terminating execution.')
@@ -68,22 +70,23 @@ app.layout = html.Div([
                Output('graph_debt_cad', 'figure')],
               [Input('interval_debt', 'n_intervals')])
 def interval_debt_triggered(n_intervals):
+    update_debt_df_with_current_price()
     figure_btc = update_graph_debt_btc()
     figure_cad = update_graph_debt_cad()
     return figure_btc, figure_cad
 
+
 def update_graph_debt_btc():
-    df_debt = build_debt_dataframe()
-    trace1 = go.Scatter(x=df_debt['date'],
-                        y=df_debt['debt_btc'],
+    trace1 = go.Scatter(x=Loan.df_debt['date'],
+                        y=Loan.df_debt['debt_btc'],
                         mode='lines',
                         name='Debt')
-    trace2 = go.Scatter(x=df_debt['date'],
-                        y=df_debt['interest_btc'],
+    trace2 = go.Scatter(x=Loan.df_debt['date'],
+                        y=Loan.df_debt['interest_btc'],
                         mode='lines',
                         name='Interest')
-    trace3 = go.Scatter(x=df_debt['date'],
-                        y=df_debt['total_liab_btc'],
+    trace3 = go.Scatter(x=Loan.df_debt['date'],
+                        y=Loan.df_debt['total_liab_btc'],
                         mode='lines',
                         name='Total Liabilities')
     data = [trace1, trace2, trace3]
@@ -128,17 +131,16 @@ def update_graph_debt_btc():
 
 
 def update_graph_debt_cad():
-    df_debt = build_debt_dataframe()
-    trace1 = go.Scatter(x=df_debt['date'],
-                        y=df_debt['debt_cad'],
+    trace1 = go.Scatter(x=Loan.df_debt['date'],
+                        y=Loan.df_debt['debt_cad'],
                         mode='lines',
                         name='Debt')
-    trace2 = go.Scatter(x=df_debt['date'],
-                        y=df_debt['interest_cad'],
+    trace2 = go.Scatter(x=Loan.df_debt['date'],
+                        y=Loan.df_debt['interest_cad'],
                         mode='lines',
                         name='Interest')
-    trace3 = go.Scatter(x=df_debt['date'],
-                        y=df_debt['total_liab_cad'],
+    trace3 = go.Scatter(x=Loan.df_debt['date'],
+                        y=Loan.df_debt['total_liab_cad'],
                         mode='lines',
                         name='Total Liabilities')
     data = [trace1, trace2, trace3]
@@ -187,12 +189,12 @@ def update_graph_debt_cad():
               [Input('interval_price', 'n_intervals')])
 def interval_price_triggered(n_intervals):
     # TODO: Need to wrap this, to catch Third Party API exception
-    price = update_price()
+    price = update_price_label()
     figure = update_graph_ratio()
     return price, figure
 
 
-def update_price():
+def update_price_label():
     price_usd = float(tools.get_usd_price())
     curr_fx_cadusd = float(tools.get_fx_cadusd_rates(datetime.datetime.now().strftime('%Y-%m-%d'))[0])
     price_cad = int(price_usd / curr_fx_cadusd)
@@ -200,7 +202,7 @@ def update_price():
 
 
 def update_graph_ratio():
-    update_ratios_with_current_price()
+    update_loans_with_current_price()
     figure = build_graph_ratio()
     return figure
 
