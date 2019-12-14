@@ -9,6 +9,7 @@ sys.path.append(os.path.realpath('.'))
 import loan
 import exceptions
 import tools
+from debt import Debt
 
 
 class TestLoan(unittest.TestCase):
@@ -261,7 +262,7 @@ class TestLoan(unittest.TestCase):
     def test_debt_dataframe(self):
         loan.set_test_mode('loans_12.csv')
         loan.init_loans()
-        df_debt = loan.Loan.df_debt
+        df_debt = Debt().build_dataframe()
         self.assertEqual(df_debt[df_debt['date'] == '2019-12-01']['debt_cad'].values[0],
                          20000, 'Debt cad should be 20000')
         self.assertEqual(df_debt[df_debt['date'] == '2019-12-02']['debt_cad'].values[0],

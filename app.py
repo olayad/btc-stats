@@ -8,7 +8,8 @@ import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 from loan import Loan, get_loans, set_test_mode, set_loans_file,\
-    update_loans_with_current_price, build_debt_dataframe, update_debt_df_with_current_price
+    update_loans_with_current_price
+from debt import Debt
 from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable, InvalidLoanData
 import sys
 import argparse
@@ -30,7 +31,7 @@ if args.file:
 
 try:
     loans = get_loans()
-    # df_debt = build_debt_dataframe()
+    # df_debt = build_dataframe()
 except InitializationDataNotFound:
     print('[ERROR] Validate \'loan.csv\' and \'btcusd.csv\' files are available' +
           ' in \'/data/\' dir. Terminating execution.')
@@ -40,6 +41,9 @@ except ThirdPartyApiUnavailable:
     sys.exit(1)
 except InvalidLoanData:
     print('[ERROR] /data/loan.csv file has inconsistent values (duplicate loan entry?)')
+
+debt = Debt()
+debt.build_dataframe()
 
 
 app = dash.Dash()
@@ -70,23 +74,23 @@ app.layout = html.Div([
                Output('graph_debt_cad', 'figure')],
               [Input('interval_debt', 'n_intervals')])
 def interval_debt_triggered(n_intervals):
-    update_debt_df_with_current_price()
+    debt.update_debt_df_with_current_price()
     figure_btc = update_graph_debt_btc()
     figure_cad = update_graph_debt_cad()
     return figure_btc, figure_cad
 
 
 def update_graph_debt_btc():
-    trace1 = go.Scatter(x=Loan.df_debt['date'],
-                        y=Loan.df_debt['debt_btc'],
+    trace1 = go.Scatter(x=debt.df_debt['date'],
+                        y=debt.df_debt['debt_btc'],
                         mode='lines',
                         name='Debt')
-    trace2 = go.Scatter(x=Loan.df_debt['date'],
-                        y=Loan.df_debt['interest_btc'],
+    trace2 = go.Scatter(x=debt.df_debt['date'],
+                        y=debt.df_debt['interest_btc'],
                         mode='lines',
                         name='Interest')
-    trace3 = go.Scatter(x=Loan.df_debt['date'],
-                        y=Loan.df_debt['total_liab_btc'],
+    trace3 = go.Scatter(x=debt.df_debt['date'],
+                        y=debt.df_debt['total_liab_btc'],
                         mode='lines',
                         name='Total Liabilities')
     data = [trace1, trace2, trace3]
@@ -131,16 +135,16 @@ def update_graph_debt_btc():
 
 
 def update_graph_debt_cad():
-    trace1 = go.Scatter(x=Loan.df_debt['date'],
-                        y=Loan.df_debt['debt_cad'],
+    trace1 = go.Scatter(x=debt.df_debt['date'],
+                        y=debt.df_debt['debt_cad'],
                         mode='lines',
                         name='Debt')
-    trace2 = go.Scatter(x=Loan.df_debt['date'],
-                        y=Loan.df_debt['interest_cad'],
+    trace2 = go.Scatter(x=debt.df_debt['date'],
+                        y=debt.df_debt['interest_cad'],
                         mode='lines',
                         name='Interest')
-    trace3 = go.Scatter(x=Loan.df_debt['date'],
-                        y=Loan.df_debt['total_liab_cad'],
+    trace3 = go.Scatter(x=debt.df_debt['date'],
+                        y=debt.df_debt['total_liab_cad'],
                         mode='lines',
                         name='Total Liabilities')
     data = [trace1, trace2, trace3]
