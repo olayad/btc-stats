@@ -3,6 +3,8 @@ import pandas as pd
 import datetime
 import tools
 from exceptions import InitializationDataNotFound, InvalidLoanData
+from price_data import PriceData
+
 
 TEST_MODE = 0
 LOANS_INPUT_FILE = 'loans.csv'
@@ -13,11 +15,12 @@ COLLATERAL_DECREASED = 2
 CAD_BORROWED_INCREASED = 3
 DAILY_INTEREST = 0.000329
 
+df_btcusd = PriceData().df_btcusd
+
 class Loan:
     counter = 1
-    active_loans = []
+    actives = []
     df_loans = None
-    df_btcusd = None
     df_debt = None
 
     def __init__(self, start_date, wallet_address):
@@ -33,8 +36,8 @@ class Loan:
 
     def calculate_loan_stats(self):
         loan_start_date = pd.Timestamp(self.start_date)
-        self.stats['date'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= loan_start_date]['Date']
-        self.stats['btc_price_usd'] = Loan.df_btcusd[Loan.df_btcusd['Date'] >= loan_start_date]['Last']
+        self.stats['date'] = df_btcusd[df_btcusd['Date'] >= loan_start_date]['Date']
+        self.stats['btc_price_usd'] = df_btcusd[df_btcusd['Date'] >= loan_start_date]['Last']
         self.stats['fx_cadusd'] = tools.get_fx_cadusd_rates(str(self.start_date))
         self.stats['btc_price_cad'] = [round(row['btc_price_usd'] / float(row['fx_cadusd']), 1) for _, row in self.stats.iterrows()]
         self.stats['debt_cad'] = self.populate_debt_cad()
@@ -146,23 +149,22 @@ def set_loans_file(input_file):
 
 
 def get_loans():
-    if len(Loan.active_loans) is 0:
+    if len(Loan.actives) is 0:
         init_loans()
-    return Loan.active_loans
+    return Loan.actives
 
 
 def init_loans():
     load_dataframes()
-    Loan.active_loans = create_loan_instances()
-    for loan in Loan.active_loans: loan.calculate_loan_stats()
+    Loan.actives = create_loan_instances()
+    for loan in Loan.actives: loan.calculate_loan_stats()
     Loan.df_debt = build_debt_dataframe()
 
 
-def load_dataframes():
-    Loan.df_loans = load_loans_dataframe()
-    tools.update_btcusd_csv()
-    Loan.df_btcusd = load_price_dataframe()
 
+def load_dataframes():
+    # global df_btcusd
+    Loan.df_loans = load_loans_dataframe()
 
 def load_loans_dataframe():
     global TEST_MODE
@@ -179,16 +181,7 @@ def load_loans_dataframe():
     return df_loans
 
 
-def load_price_dataframe():
-    df_btcusd = None
-    try:
-        df_btcusd = pd.read_csv('./data/btcusd.csv')
-    except FileNotFoundError:
-        print('[ERROR] Could not find file [/data/btcusd.csv].')
-        raise InitializationDataNotFound
-    df_btcusd['Date'] = pd.to_datetime(df_btcusd['Date'])
-    df_btcusd['Last'] = pd.to_numeric(df_btcusd['Close'])
-    return df_btcusd
+
 
 
 def create_loan_instances():
@@ -240,7 +233,7 @@ def update_borrowed_cad_history(loans, csv_entry):
 def update_loans_with_current_price(date_given=0, price_given=0):
     date = tools.get_current_date_for_exchange_api() if not date_given else date_given
     price = price_given if price_given else tools.get_usd_price()
-    for cdp in Loan.active_loans: cdp.update_stats_with_current_price(pd.Timestamp(date), float(price))
+    for cdp in Loan.actives: cdp.update_stats_with_current_price(pd.Timestamp(date), float(price))
 
 
 def build_debt_dataframe():
@@ -249,7 +242,7 @@ def build_debt_dataframe():
     debt = []
     dates = []
     oldest_active_loan_date = pd.to_datetime(find_oldest_active_date())
-    most_recent_day_in_stats = Loan.active_loans[0].stats.iloc[0]['date']
+    most_recent_day_in_stats = Loan.actives[0].stats.iloc[0]['date']
     curr_date = most_recent_day_in_stats
     loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
     while curr_date != (oldest_active_loan_date - datetime.timedelta(days=1)):
@@ -275,14 +268,14 @@ def build_debt_dataframe():
 
 def find_oldest_active_date():
     oldest_active = datetime.datetime.today().date()
-    for cdp in Loan.active_loans:
+    for cdp in Loan.actives:
         if cdp.start_date < oldest_active: oldest_active = cdp.start_date
     return oldest_active
 
 
 def get_loans_generating_interest_at_date(date):
     loans_active_at_date = []
-    for cdp in Loan.active_loans:
+    for cdp in Loan.actives:
         if cdp.start_date <= date: loans_active_at_date.append(cdp)
     return loans_active_at_date
 
@@ -290,7 +283,7 @@ def get_loans_generating_interest_at_date(date):
 def get_btc_cad_price_data_from_oldest_loan():
     btc_cad_price = []
     oldest_active = find_oldest_active_date()
-    for cdp in Loan.active_loans:
+    for cdp in Loan.actives:
         if cdp.start_date == oldest_active: btc_cad_price = cdp.stats['btc_price_cad']
     return btc_cad_price
 
@@ -329,7 +322,7 @@ def update_debt_df_with_current_price():
     Loan.df_debt['debt_btc'] = calculate_debt_in_btc(Loan.df_debt)
     Loan.df_debt['interest_btc'] = calculate_interest_in_btc(Loan.df_debt)
     Loan.df_debt['total_liab_btc'] = calculate_total_liabilities_btc(Loan.df_debt)
-    # print(Loan.active_loans[0].stats.head())
+    # print(Loan.actives[0].stats.head())
     # print('new_debt after price update\n', Loan.df_debt.head())
     # print()
     # print()

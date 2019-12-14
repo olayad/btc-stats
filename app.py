@@ -45,7 +45,7 @@ except InvalidLoanData:
 app = dash.Dash()
 app.layout = html.Div([
     dcc.Interval(id='interval_price', interval=10000, n_intervals=0),
-    dcc.Interval(id='interval_debt', interval=86400000, n_intervals=0),  # daily update
+    dcc.Interval(id='interval_debt', interval=100000, n_intervals=0),
 
     html.H1(id='btc_price', children=''),
 
@@ -210,7 +210,7 @@ def update_graph_ratio():
 def build_graph_ratio():
     data = []
     oldest_start_date = datetime.date.today()
-    for loan in Loan.active_loans:
+    for loan in Loan.actives:
         if loan.start_date < oldest_start_date : oldest_start_date = loan.start_date
         trace = go.Scatter(x=loan.stats['date'],
                            y=loan.stats['collateralization_ratio'],
