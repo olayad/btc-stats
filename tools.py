@@ -1,8 +1,8 @@
 import requests
 import json
-from exceptions import ThirdPartyApiUnavailable
 import datetime
 import pytz
+from exceptions import ThirdPartyApiUnavailable
 
 quandl_url = 'https://www.quandl.com/api/v3/datasets/BCHARTS/KRAKENUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
 bitfinex_url = 'https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD'
@@ -35,9 +35,6 @@ def call_exchange_api():
         print('[ERROR] Exchange API not responding.')
         raise ThirdPartyApiUnavailable
     return json.loads(response.text)[0][1]
-
-
-
 
 
 def call_fx_api(start_date, end_date):
@@ -93,18 +90,7 @@ def fill_missing_day_rates(rates):
         curr = curr + datetime.timedelta(days=1)
         if curr > end_date:
             break
-    # result = add_extra_rate_if_past_17hrs_pst(result)
     return result
-
-
-# def add_extra_rate_if_past_17hrs_pst(result):
-#     # At 4pm PST, Kraken closes the day and starts reporting on the next one where
-#     # Bank of Canada does not, following extra rate allows for that.
-#     # TODO: need to make this more portable, use timezones?
-#     now_hour = datetime.datetime.now().hour
-#     if now_hour >= 17:
-#         result.append(AVG_FXCADUSD)
-#     return result
 
 
 def get_current_date_for_exchange_api():

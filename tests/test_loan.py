@@ -6,6 +6,7 @@ import os
 from datetime import datetime, date, time, timedelta
 import pandas as pd
 sys.path.append(os.path.realpath('.'))
+import config as cfg
 import loan
 import exceptions
 import tools
@@ -14,11 +15,11 @@ from debt import Debt
 
 class TestLoan(unittest.TestCase):
     def test_invalid_loan_csv_data(self):
-        loan.set_test_mode('loans_0.csv')
+        cfg.set_test_mode('loans_0.csv')
         self.assertRaises(exceptions.InvalidLoanData, loan.init_loans)
 
     def test_single_loan_no_collateral_updates(self):
-        loan.set_test_mode('loans_1.csv')
+        cfg.set_test_mode('loans_1.csv')
         loan.init_loans()
         self.assertEqual(len(loan.Loan.actives), 1, 'Should be 1 loan')
         self.assertEqual(len(loan.Loan.actives[0].collateral_history), 1,
@@ -27,7 +28,7 @@ class TestLoan(unittest.TestCase):
                          'Should be 1.0 in total collateral')
 
     def test_single_loan_multiple_collateral_increases(self):
-        loan.set_test_mode('loans_2.csv')
+        cfg.set_test_mode('loans_2.csv')
         loan.init_loans()
         df_stats = loan.Loan.actives[0].stats
         self.assertEqual(len(loan.Loan.actives[0].collateral_history), 3,
@@ -42,7 +43,7 @@ class TestLoan(unittest.TestCase):
                          6.0, 'Should be 6.0 in collateral_amount')
 
     def test_multiple_loans_multiple_collateral_increases(self):
-        loan.set_test_mode('loans_3.csv')
+        cfg.set_test_mode('loans_3.csv')
         loan.init_loans()
         self.assertEqual(len(loan.Loan.actives), 2, "Should be 2")
         self.assertEqual(loan.Loan.actives[0].current_collateral, 3.0,
@@ -67,7 +68,7 @@ class TestLoan(unittest.TestCase):
                          10.0, 'Should be 10.0 in collateral_amount')
 
     def test_single_loan_multiple_collateral_decreases(self):
-        loan.set_test_mode('loans_4.csv')
+        cfg.set_test_mode('loans_4.csv')
         loan.init_loans()
         df_stats = loan.Loan.actives[0].stats
         self.assertEqual(len(loan.Loan.actives[0].collateral_history), 3,
@@ -82,7 +83,7 @@ class TestLoan(unittest.TestCase):
                          5.0, 'Should be 5.0 in collateral_amount')
 
     def test_single_loan_multiple_collateral_increases_and_decreases(self):
-        loan.set_test_mode('loans_5.csv')
+        cfg.set_test_mode('loans_5.csv')
         loan.init_loans()
         df_stats = loan.Loan.actives[0].stats
         self.assertEqual(len(loan.Loan.actives[0].collateral_history), 5,
@@ -101,7 +102,7 @@ class TestLoan(unittest.TestCase):
                          4.0, 'Should be 4.0 in collateral_amount')
 
     def test_multiple_loans_multiple_cad_borrowed_increases(self):
-        loan.set_test_mode('loans_6.csv')
+        cfg.set_test_mode('loans_6.csv')
         loan.init_loans()
         self.assertEqual(loan.Loan.actives[0].current_debt_cad, 10000,
                          'Should be 10000 in current cad debt')
@@ -133,7 +134,7 @@ class TestLoan(unittest.TestCase):
                          6000, 'Should be 60000 in debt_cad')
 
     def test_multiple_loans_multiple_updates_in_collateral_and_cad_borrowed(self):
-        loan.set_test_mode('loans_7.csv')
+        cfg.set_test_mode('loans_7.csv')
         loan.init_loans()
         self.assertEqual(len(loan.Loan.actives), 2, "Should be 2 actives loans")
         self.assertEqual(loan.Loan.actives[0].current_collateral, 4.0,
@@ -198,7 +199,7 @@ class TestLoan(unittest.TestCase):
                          6000, 'Should be 60000 in debt_cad')
 
     def test_collateralization_ratio(self):
-        loan.set_test_mode('loans_8.csv')
+        cfg.set_test_mode('loans_8.csv')
         loan.init_loans()
         df_stats0 = loan.Loan.actives[0].stats
         self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0], 1),
@@ -211,7 +212,7 @@ class TestLoan(unittest.TestCase):
                          2.4, 'Should be 2.4 in collateralization_ratio')
     #
     def test_updating_ratio_with_current_price(self):
-        loan.set_test_mode('loans_9.csv')
+        cfg.set_test_mode('loans_9.csv')
         loan.init_loans()
         df_stats0 = loan.Loan.actives[0].stats
         self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-01']['collateralization_ratio'].values[0], 1),
@@ -228,7 +229,7 @@ class TestLoan(unittest.TestCase):
                          new_ratio, 'Should be new collateralization_ratio')
 
     def test_adding_new_row_to_stats(self):
-        loan.set_test_mode('loans_10.csv')
+        cfg.set_test_mode('loans_10.csv')
         loan.init_loans()
         date_not_in_stats = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
         price = 123456.0
@@ -238,12 +239,12 @@ class TestLoan(unittest.TestCase):
                          price, 'Should be the price in the new stats entry')
         loan0 = loan.Loan.actives[0]
         prev_interest_accrued = df_stats0.iloc[1]['interest_cad']
-        curr_interest_accrued = round(prev_interest_accrued + (loan.DAILY_INTEREST * loan0.current_debt_cad), 1)
+        curr_interest_accrued = round(prev_interest_accrued + (cfg.DAILY_INTEREST * loan0.current_debt_cad), 1)
         self.assertEqual(round(df_stats0[df_stats0['date'] == date_not_in_stats]['interest_cad'].values[0], 1),
                          curr_interest_accrued, 'Interest in new row appended incorrect')
-    #
+
     def test_accrued_interest(self):
-        loan.set_test_mode('loans_11.csv')
+        cfg.set_test_mode('loans_11.csv')
         loan.init_loans()
         df_stats0 = loan.Loan.actives[0].stats
         stats_interest = df_stats0[df_stats0['date'] == pd.to_datetime('2019-12-01')]['interest_cad'].values[0]
@@ -260,7 +261,7 @@ class TestLoan(unittest.TestCase):
         self.assertEqual(44.41, stats_interest, "Should be 44.41 interest")
 
     def test_debt_dataframe(self):
-        loan.set_test_mode('loans_12.csv')
+        cfg.set_test_mode('loans_12.csv')
         loan.init_loans()
         df_debt = Debt().build_dataframe()
         self.assertEqual(df_debt[df_debt['date'] == '2019-12-01']['debt_cad'].values[0],
@@ -296,7 +297,7 @@ class TestLoan(unittest.TestCase):
         self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-01']['debt_btc'].values[0], 1),
                          2.1, 'Interest should be 2.1')     # fixed already
         self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-07']['debt_btc'].values[0], 1),
-                         9.0, 'Interest should be 9.0')
+                         9.1, 'Interest should be 9.1')
         df_stats0 = loan.Loan.actives[0].stats
         btc_price_stats = df_stats0[df_stats0['date'] == '2019-12-01']['btc_price_cad'].values[0]
         btc_price_debt = df_debt[df_debt['date'] == '2019-12-01']['btc_price_cad'].values[0]
@@ -307,11 +308,11 @@ class TestLoan(unittest.TestCase):
                          90088.83, 'Total liabilities CAD do not match')
         self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-01']['total_liab_btc'].values[0], 2),
                          2.05, 'Total liabilities BTC do not match')    # fixed already
-        self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-07']['total_liab_btc'].values[0], 2),
-                         9.05, 'Total liabilities BTC do not match')
+        self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-07']['total_liab_btc'].values[0], 1),
+                         9.1, 'Total liabilities BTC do not match')
 
     # def test_here(self):
-    #     loan.set_test_mode('loans_12.csv')
+    #     cfg.set_test_mode('loans_12.csv')
     #     loan.init_loans()
     #     df_debt = loan.Loan.df_debt
     #     print(df_debt)

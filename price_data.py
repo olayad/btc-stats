@@ -5,10 +5,10 @@ from tools import update_btcusd_csv
 
 class PriceData:
     def __init__(self):
-        self.df_btcusd = load_dataframe()
+        self.df_btcusd = load_input_file()
 
 
-def load_dataframe():
+def load_input_file():
     update_btcusd_csv()
     try:
         df_btcusd = pd.read_csv('./data/btcusd.csv')
