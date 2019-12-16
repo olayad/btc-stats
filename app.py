@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 
-# from datetime import datetime, timedelta, date
+import sys
+import argparse
+import tools
 import datetime
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
-from loan import Loan, get_loans, set_test_mode, set_loans_file,\
-    update_loans_with_current_price
+from loan import Loan, get_loans, update_loans_with_current_price
 from debt import Debt
 from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable, InvalidLoanData
-import sys
-import argparse
-import tools
+from config import set_test_mode, set_loans_input_file
 
 loans = None
-# df_debt = None
+debt = None
 
 parser = argparse.ArgumentParser(description='CDP stats server.')
 
@@ -27,11 +26,10 @@ args = parser.parse_args()
 if args.test:
     set_test_mode(args.test)
 if args.file:
-    set_loans_file(args.file)
+    set_loans_input_file(args.file)
 
 try:
     loans = get_loans()
-    # df_debt = build_dataframe()
 except InitializationDataNotFound:
     print('[ERROR] Validate \'loan.csv\' and \'btcusd.csv\' files are available' +
           ' in \'/data/\' dir. Terminating execution.')
@@ -41,9 +39,9 @@ except ThirdPartyApiUnavailable:
     sys.exit(1)
 except InvalidLoanData:
     print('[ERROR] /data/loan.csv file has inconsistent values (duplicate loan entry?)')
-
-debt = Debt()
-debt.build_dataframe()
+finally:
+    debt = Debt()
+    debt.build_dataframe()
 
 
 app = dash.Dash()
@@ -74,7 +72,7 @@ app.layout = html.Div([
                Output('graph_debt_cad', 'figure')],
               [Input('interval_debt', 'n_intervals')])
 def interval_debt_triggered(n_intervals):
-    debt.update_debt_df_with_current_price()
+    debt.update_df_with_current_price()
     figure_btc = update_graph_debt_btc()
     figure_cad = update_graph_debt_cad()
     return figure_btc, figure_cad
