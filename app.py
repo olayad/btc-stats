@@ -215,7 +215,7 @@ def build_graph_ratio():
     for loan in Loan.actives:
         if loan.start_date < oldest_start_date : oldest_start_date = loan.start_date
         trace = go.Scatter(x=loan.stats['date'],
-                           y=loan.stats['collateralization_ratio'],
+                           y=loan.stats['coll_ratio'],
                            mode='lines',
                            name='$'+str(loan.current_debt_cad))
         data.append(trace)

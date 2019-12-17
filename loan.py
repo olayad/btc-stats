@@ -34,8 +34,8 @@ class Loan:
         self.stats['fx_cadusd'] = fx_rates
         self.stats['btc_price_cad'] = [round(row['btc_price_usd'] / float(row['fx_cadusd']), 1) for _, row in self.stats.iterrows()]
         self.stats['debt_cad'] = self.populate_debt_cad()
-        self.stats['collateral_amount'] = self.populate_collateral_amounts()
-        self.stats['collateralization_ratio'] = self.calculate_collateralization_ratio()
+        self.stats['coll_amount'] = self.populate_collateral_amounts()
+        self.stats['coll_ratio'] = self.calculate_collateralization_ratio()
         self.stats['interest_cad'] = self.calculate_interest()
 
     def exchange_is_one_day_ahead_from_price_data(self, fx_rates):
@@ -72,7 +72,7 @@ class Loan:
     def calculate_collateralization_ratio(self):
         ratio_values = []
         for _, row in self.stats.iterrows():
-            ratio = round((row['btc_price_cad'] * row['collateral_amount']) / row['debt_cad'], 2)
+            ratio = round((row['btc_price_cad'] * row['coll_amount']) / row['debt_cad'], 2)
             ratio_values.append(ratio)
         return ratio_values
 
@@ -106,8 +106,8 @@ class Loan:
                                 'fx_cadusd': [fx_rate],
                                 'btc_price_cad': [btc_price_cad],
                                 'debt_cad': [self.current_debt_cad],
-                                'collateral_amount': [self.current_collateral],
-                                'collateralization_ratio': [ratio],
+                                'coll_amount': [self.current_collateral],
+                                'coll_ratio': [ratio],
                                 'interest_cad': [interest]})
         self.stats = pd.concat([new_row, self.stats]).reset_index(drop=True)
 
@@ -120,18 +120,18 @@ class Loan:
 
     def update_row_ratio(self, date_to_update, btc_price_usd):
         btc_price_cad = self.stats.loc[self.stats['date'] == date_to_update, 'btc_price_cad']
-        collateral_amount = self.stats.loc[self.stats['date'] == date_to_update, 'collateral_amount']
+        coll_amount = self.stats.loc[self.stats['date'] == date_to_update, 'coll_amount']
         debt_cad = self.stats.loc[self.stats['date'] == date_to_update, 'debt_cad']
-        current_ratio = round((btc_price_cad * collateral_amount) / debt_cad, 2)
-        self.stats.loc[self.stats['date'] == date_to_update, 'collateralization_ratio'] = current_ratio
+        current_ratio = round((btc_price_cad * coll_amount) / debt_cad, 2)
+        self.stats.loc[self.stats['date'] == date_to_update, 'coll_ratio'] = current_ratio
 
     def calculate_new_row_interest(self):
         interest_accumulated = self.stats.iloc[0]['interest_cad']
         return round(interest_accumulated + (cfg.DAILY_INTEREST * self.current_debt_cad), 2)
 
     def __str__(self):
-        return 'Loan_id:{:0>2d}, current_debt:${:6d}, current_collateral:{}, start_date:{} ' \
-               ''.format(self.id, self.current_debt_cad, self.current_collateral, self.start_date)
+        return 'Loan_id:{:0>2d}, current_debt:${:6d}, current_collateral:{}, start_date:{}, admin_fee:${}' \
+               ''.format(self.id, self.current_debt_cad, self.current_collateral, self.start_date, self.admin_fee)
 
 
 def get_loans():
@@ -189,19 +189,28 @@ def update_collateral_records(loans, csv_entry):
     for cdp in loans:
         if cdp.wallet_address == csv_entry['wallet_address']:
             new_entry = {pd.Timestamp(csv_entry['date_update']): {'type': csv_entry['type'],
-                                                                  'amount': csv_entry['collateral_amount']}}
+                                                                  'amount': csv_entry['coll_amount']}}
             cdp.collateral_history.update(new_entry)
             if csv_entry['type'] is cfg.COLLATERAL_DECREASED:
-                cdp.current_collateral -= csv_entry['collateral_amount']
+                cdp.current_collateral -= csv_entry['coll_amount']
             else:
-                cdp.current_collateral += csv_entry['collateral_amount']
+                cdp.current_collateral += csv_entry['coll_amount']
 
 
 def update_debt_cad_records(loans, csv_entry):
     for cdp in loans:
         if cdp.wallet_address == csv_entry['wallet_address']:
-            cdp.debt_history_cad.update({pd.Timestamp(csv_entry['date_update']): csv_entry['debt_cad']})
-            cdp.current_debt_cad += csv_entry['debt_cad']
+            if csv_entry['type'] == cfg.NEW_LOAN:
+                loan_with_admin_fee = int(csv_entry['debt_cad']) + int(csv_entry['admin_fee'])
+                cdp.debt_history_cad.update({pd.Timestamp(csv_entry['date_update']): loan_with_admin_fee})
+                cdp.current_debt_cad += csv_entry['debt_cad']
+                cdp.current_debt_cad += csv_entry['admin_fee']
+                # print('\tNew loan with initial debt:{}'.format(loan_with_admin_fee))
+
+            else:
+                cdp.debt_history_cad.update({pd.Timestamp(csv_entry['date_update']): csv_entry['debt_cad']})
+                cdp.current_debt_cad += csv_entry['debt_cad']
+                # print('\tI am an entry without fee, {} {}'.format(csv_entry['date_update'], csv_entry['debt_cad']))
 
 
 def update_loans_with_current_price(date_given=0, price_given=0):

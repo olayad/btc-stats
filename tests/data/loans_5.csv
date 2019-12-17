@@ -1,9 +1,9 @@
-num,type,wallet_address,collateral_amount,start_date,debt_cad,date_update
-1,0,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,8.0,2019-11-01,10000,2019-11-01
-1,1,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,2.0,2019-11-01,10000,2019-11-10
-1,2,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,1.0,2019-11-01,20000,2019-11-20
-1,2,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,2.0,2019-11-01,30000,2019-11-21
-1,2,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,3.0,2019-11-01,40000,2019-11-22
+num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
+1,0,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,8.0,2019-11-01,10000,2019-11-01,100
+1,1,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,2.0,2019-11-01,10000,2019-11-10,0
+1,2,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,1.0,2019-11-01,20000,2019-11-20,0
+1,2,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,2.0,2019-11-01,30000,2019-11-21,0
+1,2,3aaavpyq54FtTxidRv8v7R47odqAp2Naaa,3.0,2019-11-01,40000,2019-11-22,0
 
 
 

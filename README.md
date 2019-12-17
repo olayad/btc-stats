@@ -14,7 +14,7 @@ to calculate BTC prices in CAD.
 + Create input file `cdp-stats/data/loans.csv`, which should contains the following information for every CDP.
 
 ```
-num,type,wallet_address,collateral_amount,start_date,debt_cad,date_update
+num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
  ```
 
 | CSV column   |Description|
@@ -26,10 +26,11 @@ num,type,wallet_address,collateral_amount,start_date,debt_cad,date_update
 | |`2` collateral decrease| 
 | |`3` debt (borrowed CAD) increased|
 |wallet_address|(str) Bitcoin address used to deposit collateral|
-|collateral_amount|(float) Amount of BTC increased/decreased by `type` movement|
+|coll_amount|(float) Amount of BTC increased/decreased by `type` movement|
 |start_date|(YYYY-MM-DD) Date loan became active|
 |debt_cad|(float) Amount of CAD increased by `type` movement|
 |date_update|(YYYY-MM-DD) Date loan reflected `type` movement|
+|admin_fee|(int) Fee charged at the start of loan|
 
 
 ## Running the application
