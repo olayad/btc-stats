@@ -1,7 +1,7 @@
 # CDP Stats Tool
 
-The following program offers statics on Collaterized Debt Positions (CDP) using Bitcoin (BTC) as collateral.
-The program will obtain historic BTCUSD data information from Quandl and Bitfinex to calculate 
+This tool generates stats on Collaterized Debt Positions (CDP) using Bitcoin (BTC) as collateral.
+The tool will obtain historic BTCUSD data information from Quandl and Bitfinex to calculate 
 a Collateralization Ratio and use Bank Of Canada data (CADUSD exchange rate)
 to calculate BTC prices in CAD. 
 
