@@ -14,7 +14,7 @@ class Loan:
     actives = []
     df_loans_input_file = None
 
-    def __init__(self, start_date, wallet_address):
+    def __init__(self, start_date, wallet_address, admin_fee):
         self.stats = pd.DataFrame()
         self.collateral_history = {}    # {date:{'type': _ , 'amount': _}
         self.debt_history_cad = {}  # {date: amount}
@@ -22,6 +22,7 @@ class Loan:
         self.current_debt_cad = 0
         self.start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
         self.wallet_address = wallet_address
+        self.admin_fee = admin_fee
         self.id = self.counter
         Loan.counter += 1
 
@@ -130,7 +131,7 @@ class Loan:
         return round(interest_accumulated + (cfg.DAILY_INTEREST * self.current_debt_cad), 2)
 
     def __str__(self):
-        return 'Loan_id:{:0>2d}, current_debt:${:6d}, current_collateral:{}, start_date:{}, admin_fee:${}' \
+        return 'Loan_id:{:0>2d}, current_debt:${:6d}, current_collateral:{}, start_date:{}, admin_fee:{}' \
                ''.format(self.id, self.current_debt_cad, self.current_collateral, self.start_date, self.admin_fee)
 
 
@@ -182,7 +183,7 @@ def new_loan_entry_is_valid(active_loans, csv_entry):
 
 
 def instantiate_new_loan(entry):
-    return Loan(entry['start_date'], entry['wallet_address'])
+    return Loan(entry['start_date'], entry['wallet_address'], entry['admin_fee'])
 
 
 def update_collateral_records(loans, csv_entry):
@@ -200,17 +201,8 @@ def update_collateral_records(loans, csv_entry):
 def update_debt_cad_records(loans, csv_entry):
     for cdp in loans:
         if cdp.wallet_address == csv_entry['wallet_address']:
-            if csv_entry['type'] == cfg.NEW_LOAN:
-                loan_with_admin_fee = int(csv_entry['debt_cad']) + int(csv_entry['admin_fee'])
-                cdp.debt_history_cad.update({pd.Timestamp(csv_entry['date_update']): loan_with_admin_fee})
-                cdp.current_debt_cad += csv_entry['debt_cad']
-                cdp.current_debt_cad += csv_entry['admin_fee']
-                # print('\tNew loan with initial debt:{}'.format(loan_with_admin_fee))
-
-            else:
-                cdp.debt_history_cad.update({pd.Timestamp(csv_entry['date_update']): csv_entry['debt_cad']})
-                cdp.current_debt_cad += csv_entry['debt_cad']
-                # print('\tI am an entry without fee, {} {}'.format(csv_entry['date_update'], csv_entry['debt_cad']))
+            cdp.debt_history_cad.update({pd.Timestamp(csv_entry['date_update']): csv_entry['debt_cad']})
+            cdp.current_debt_cad += csv_entry['debt_cad']
 
 
 def update_loans_with_current_price(date_given=0, price_given=0):
