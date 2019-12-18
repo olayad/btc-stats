@@ -190,9 +190,13 @@ def update_graph_debt_cad():
                Output('graph_ratio', 'figure')],
               [Input('interval_price', 'n_intervals')])
 def interval_price_triggered(n_intervals):
-    # TODO: Need to wrap this, to catch Third Party API exception
-    price = update_price_label()
-    figure = update_graph_ratio()
+    try:
+        price = update_price_label()
+    except ThirdPartyApiUnavailable:
+        price = 'NA'
+        print('[INFO] Third party API not available, could not update price.')
+    finally:
+        figure = update_graph_ratio()
     return price, figure
 
 
