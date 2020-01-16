@@ -227,7 +227,7 @@ class TestLoan(unittest.TestCase):
         new_ratio = round((btc_price_cad * coll_amount) / debt_cad, 2)
         self.assertEqual(df_stats0[df_stats0['date'] == date_to_update]['coll_ratio'].values[0],
                          new_ratio, 'Should be new coll_ratio')
-
+    #
     def test_adding_new_row_to_stats(self):
         cfg.set_test_mode('loans_10.csv')
         loan.init_loans()
