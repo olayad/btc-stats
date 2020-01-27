@@ -102,6 +102,7 @@ class TestLoan(unittest.TestCase):
                          4.0, 'Should be 4.0 in coll_amount')
 
     def test_multiple_loans_multiple_cad_borrowed_increases(self):
+        #Todo: fix, why loan6.csv has also movements in collateral
         cfg.set_test_mode('loans_6.csv')
         loan.init_loans()
         self.assertEqual(loan.Loan.actives[0].current_debt_cad, 10000,

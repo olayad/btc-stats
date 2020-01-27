@@ -42,6 +42,12 @@ except InvalidLoanData:
 finally:
     debt = Debt()
     debt.build_dataframe()
+    #Todo: change debt.df_debt to just debt
+
+for l in loans:
+    if l.wallet_address == "3NfHr2PvXyVdE7Gvbikj6hr6pLckQm8q2k":
+        print(l.stats)
+        print("this is the loan I need")
 
 
 app = dash.Dash()
