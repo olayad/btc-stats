@@ -43,11 +43,6 @@ finally:
     debt = Debt()
     debt.build_dataframe()
 
-for l in loans:
-    if l.wallet_address == "3NfHr2PvXyVdE7Gvbikj6hr6pLckQm8q2k":
-        print(l.stats)
-        print("this is the loan I need")
-
 
 app = dash.Dash()
 app.layout = html.Div([
@@ -69,7 +64,6 @@ app.layout = html.Div([
             dcc.Graph(id='graph_debt_cad')
         ], style={'width': '50%', 'display': 'inline-block'})
     ])
-
 ])
 
 
