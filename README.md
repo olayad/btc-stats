@@ -35,7 +35,7 @@ num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
 
 ## Running the application
 
-To run the application (by default, looks for `/data/loans.csv` file),  
+To run the application (by default, looks for `./data/loans.csv` file),  
 
 ```
 $ ./app.py
@@ -45,7 +45,7 @@ To run the application using a different input file data, run the application wi
 A sample input file has been provided, 
 
 ```
-$ ./app.py --f loans-sample.csv
+$ ./app.py --f ./data/loans-sample.csv
 ```
 
 Open `http://127.0.0.1:8050/` in your web browser.

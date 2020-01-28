@@ -1,5 +1,5 @@
 TEST_MODE = 0
-LOANS_INPUT_FILE = 'loans.csv'
+LOANS_INPUT_FILE = './data/loans.csv'
 
 NEW_LOAN = 0
 COLLATERAL_INCREASED = 1

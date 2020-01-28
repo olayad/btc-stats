@@ -149,7 +149,7 @@ def init_loans():
 def load_input_file():
     file = ''
     try:
-        file = './tests/data/'+cfg.TEST_MODE if cfg.TEST_MODE else './data/'+cfg.LOANS_INPUT_FILE
+        file = './tests/data/'+cfg.TEST_MODE if cfg.TEST_MODE else cfg.LOANS_INPUT_FILE
         print('[INFO] Initializing loans with file: '+file)
         df_loans = pd.read_csv(file)
     except FileNotFoundError:
