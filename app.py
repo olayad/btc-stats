@@ -40,14 +40,7 @@ except ThirdPartyApiUnavailable:
 except InvalidLoanData:
     print('[ERROR] /data/loan.csv file has inconsistent values (duplicate loan entry?)')
 finally:
-    debt = Debt()
-    debt.build_dataframe()
-    #Todo: change debt.df_debt to just debt
-
-for l in loans:
-    if l.wallet_address == "3NfHr2PvXyVdE7Gvbikj6hr6pLckQm8q2k":
-        print(l.stats)
-        print("this is the loan I need")
+    debt = Debt().build_dataframe()
 
 
 app = dash.Dash()
@@ -85,16 +78,16 @@ def interval_debt_triggered(n_intervals):
 
 
 def update_graph_debt_btc():
-    trace1 = go.Scatter(x=debt.df_debt['date'],
-                        y=debt.df_debt['debt_btc'],
+    trace1 = go.Scatter(x=debt['date'],
+                        y=debt['debt_btc'],
                         mode='lines',
                         name='Debt')
-    trace2 = go.Scatter(x=debt.df_debt['date'],
-                        y=debt.df_debt['interest_btc'],
+    trace2 = go.Scatter(x=debt['date'],
+                        y=debt['interest_btc'],
                         mode='lines',
                         name='Interest')
-    trace3 = go.Scatter(x=debt.df_debt['date'],
-                        y=debt.df_debt['total_liab_btc'],
+    trace3 = go.Scatter(x=debt['date'],
+                        y=debt['total_liab_btc'],
                         mode='lines',
                         name='Total Liabilities')
     data = [trace1, trace2, trace3]
@@ -139,16 +132,16 @@ def update_graph_debt_btc():
 
 
 def update_graph_debt_cad():
-    trace1 = go.Scatter(x=debt.df_debt['date'],
-                        y=debt.df_debt['debt_cad'],
+    trace1 = go.Scatter(x=debt['date'],
+                        y=debt['debt_cad'],
                         mode='lines',
                         name='Debt')
-    trace2 = go.Scatter(x=debt.df_debt['date'],
-                        y=debt.df_debt['interest_cad'],
+    trace2 = go.Scatter(x=debt['date'],
+                        y=debt['interest_cad'],
                         mode='lines',
                         name='Interest')
-    trace3 = go.Scatter(x=debt.df_debt['date'],
-                        y=debt.df_debt['total_liab_cad'],
+    trace3 = go.Scatter(x=debt['date'],
+                        y=debt['total_liab_cad'],
                         mode='lines',
                         name='Total Liabilities')
     data = [trace1, trace2, trace3]
