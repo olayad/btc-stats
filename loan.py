@@ -231,3 +231,20 @@ def get_btc_cad_price_data_from_oldest_loan():
     for cdp in Loan.actives:
         if cdp.start_date == oldest_active: btc_cad_price = cdp.stats['btc_price_cad']
     return btc_cad_price
+
+def get_debt_summary():
+    id = []
+    start_value_btc = []
+    curr_value_btc = []
+    for cdp in Loan.actives:
+        print(cdp.stats)
+        start = round(cdp.stats.iloc[-1]['debt_cad'] / cdp.stats.iloc[-1]['btc_price_cad'], 2)
+        start_value_btc.append(start)
+        print('start', start)
+
+        curr = round(cdp.stats.iloc[0]['debt_cad'] / cdp.stats.iloc[0]['btc_price_cad'], 2)
+
+        curr_value_btc.append(curr)
+        print('tail: ', curr)
+
+#
