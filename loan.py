@@ -232,6 +232,7 @@ def get_btc_cad_price_data_from_oldest_loan():
         if cdp.start_date == oldest_active: btc_cad_price = cdp.stats['btc_price_cad']
     return btc_cad_price
 
+
 def get_debt_summary():
     id = []
     start_value_btc = []

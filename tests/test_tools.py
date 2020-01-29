@@ -7,12 +7,13 @@ import unittest
 import tools
 import datetime
 
-class TestGetRates(unittest.TestCase):
+class TestTools(unittest.TestCase):
     # Kraken information contains next day info after 1600 PST, hence this tests
     # should account for that extra entry.
 
     def test_get_rates_all_week_days(self):
         resp = tools.get_fx_cadusd_rates(start_date='2019-11-04', end_date='2019-11-08')
+        print(resp)
         if datetime.datetime.now().hour >= 16:
             self.assertEqual(len(resp), 6, 'Should be 6')
         else:
