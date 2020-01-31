@@ -46,8 +46,8 @@ finally:
 
 app = dash.Dash()
 app.layout = html.Div([
-    dcc.Interval(id='interval_price', interval=10000, n_intervals=0),
-    dcc.Interval(id='interval_debt', interval=100000, n_intervals=0),
+    dcc.Interval(id='interval_price', interval=50000, n_intervals=0),
+    dcc.Interval(id='interval_debt', interval=500000, n_intervals=0),
 
     html.H1(id='btc_price', children=''),
 
@@ -65,6 +65,20 @@ app.layout = html.Div([
         ], style={'width': '50%', 'display': 'inline-block'})
     ])
 ])
+
+
+total_coll = 0
+for l in loans:
+    total_coll += l.current_collateral
+price = 12324
+loan = 190000
+print("current collateral held by Ledn: ", total_coll)
+liquidate = (loan/price)
+print("If I wanted to liqudate (Total borrowed/\ bicoin price):", liquidate)
+print("If I want to rebalance with current price: ", liquidate * 2)
+withdraw = total_coll - (liquidate * 2)
+print(f"Could withdraw: {withdraw} - ${withdraw * price}")
+print(f"cost to rebalance (2%): {loan*(0.02)}")
 
 
 @app.callback([Output('graph_debt_btc', 'figure'),
