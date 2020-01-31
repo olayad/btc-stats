@@ -53,6 +53,7 @@ def format_payload(json_response):
     else:
         return {}
 
+
 def payload_is_not_empty(payload):
     return len(payload['observations']) != 0
 

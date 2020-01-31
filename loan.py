@@ -233,19 +233,21 @@ def get_btc_cad_price_data_from_oldest_loan():
     return btc_cad_price
 
 
-def get_debt_summary():
-    id = []
-    start_value_btc = []
-    curr_value_btc = []
+def get_cost_loan_analysis():
+    loans = []
     for cdp in Loan.actives:
+        print('debt_history:', cdp.debt_history_cad)
         print(cdp.stats)
-        start = round(cdp.stats.iloc[-1]['debt_cad'] / cdp.stats.iloc[-1]['btc_price_cad'], 2)
-        start_value_btc.append(start)
-        print('start', start)
+        start_value_btc = round(cdp.stats.iloc[-1]['debt_cad'] / cdp.stats.iloc[-1]['btc_price_cad'], 2)
+        print(f'START {cdp.stats.iloc[-1]["date"]} - price:{ cdp.stats.iloc[-1]["btc_price_cad"]} - btc value:{start_value_btc}')
 
-        curr = round(cdp.stats.iloc[0]['debt_cad'] / cdp.stats.iloc[0]['btc_price_cad'], 2)
+        curr_value_btc = round(cdp.stats.iloc[0]['debt_cad'] / cdp.stats.iloc[0]['btc_price_cad'], 2)
+        print(f'CURR {cdp.stats.iloc[0]["date"]} - price:{ cdp.stats.iloc[0]["btc_price_cad"]} - btc value:{curr_value_btc}')
+        loans.append({'start_date': cdp.stats.iloc[-1]["date"],
+                      'start_price_cad': cdp.stats.iloc[-1]['btc_price_cad'],
+                      'start_value_btc': start_value_btc,
+                      'curr_date': cdp.stats.iloc[0]["date"],
+                      'curr_price_cad': cdp.stats.iloc[0]['btc_price_cad'],
+                      'curr_value_btc': curr_value_btc})
 
-        curr_value_btc.append(curr)
-        print('tail: ', curr)
-
-#
+    print(loans)
