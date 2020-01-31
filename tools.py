@@ -56,12 +56,29 @@ def strip_payload(payload):
     return {i['d']: i['FXCADUSD']['v'] for i in payload['observations']}
 
 
-def get_fx_cadusd_rates(start_date, end_date=str(datetime.date.today())):
-    json_response = call_fx_api(start_date, end_date)
+
+
+
+def get_fx_cadusd_rates(start_date, end_date=None):
+    print(f"\n\n(get_fx_cadusd_rates)")
+    print(f"get_fx_cadusd_rates: start_date:{start_date} - end_date:{end_date}")
+    if end_date is None:
+        print(f"end_date was None, calling API with end_date:{str(datetime.date.today())}")
+        json_response = call_fx_api(start_date, end_date=str(datetime.date.today()))
+        # end_date = get_current_date_for_exchange_api()
+    else:
+        print(f"calling BOC API with end_date given: {end_date}")
+        json_response = call_fx_api(start_date, end_date)
+
+    print(f"json_response BOC: ", json_response)
     observations = {}
     if payload_is_not_empty(json_response):
         observations = strip_payload(json_response)
-    api_data = [{'start_date': start_date, 'end_date': get_current_date_for_exchange_api()}, observations]
+
+    if end_date is None:
+        api_data = [{'start_date': start_date, 'end_date': get_current_date_for_exchange_api()}, observations]
+    else:
+        api_data = [{'start_date': start_date, 'end_date': end_date}, observations]
     fx_rates = fill_missing_day_rates(api_data)
     return fx_rates
 
@@ -78,6 +95,8 @@ def fill_missing_day_rates(rates):
     global AVG_FXCADUSD
     start_date = datetime.datetime.strptime(rates[0]['start_date'], '%Y-%m-%d')
     end_date = datetime.datetime.strptime(rates[0]['end_date'], '%Y-%m-%d')
+    print("(fill_missing_day rates) rates:", rates)
+    print(f"(fill_missing_day) start:{start_date} end:{end_date}")
     result = []
     curr = start_date
     result_has_data = False
