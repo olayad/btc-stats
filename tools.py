@@ -72,7 +72,7 @@ def get_fx_cadusd_rates(start_date, end_date=None):
         observations = format_payload(json_response)
         api_data = [{'start_date': start_date, 'end_date': end_date}, observations]
     fx_rates = fill_missing_day_rates(api_data)
-    return fx_rates
+    return fx_rates[::-1]
 
 
 def fill_missing_day_rates(rates):

@@ -20,9 +20,9 @@ if __name__ == '__main__':
     suite = unittest.TestSuite()
 
     for test in args.testcase:
-        if test == "loan":
+        if test == "loans" or test == "loan":
             suite.addTest(unittest.makeSuite(test_loan.TestLoan))
-        if test == "tools":
+        if test == "tools" or test == "tool":
             suite.addTest(unittest.makeSuite(test_tools.TestTools))
         if test == "debt":
             suite.addTest(unittest.makeSuite(test_debt.TestDebt))

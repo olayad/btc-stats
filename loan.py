@@ -233,6 +233,9 @@ def get_btc_cad_price_data_from_oldest_loan():
     return btc_cad_price
 
 
+
+
+#TODO: WIP
 def get_cost_loan_analysis(end_date=None):
     cost_diff = []
     loan_id = []
@@ -248,7 +251,6 @@ def get_cost_loan_analysis(end_date=None):
             print(f'CURR {cdp.stats.iloc[0]["date"]} - price:{ cdp.stats.iloc[0]["btc_price_cad"]} - btc value:{end_cost_btc}')
 
         else:
-
             debt = cdp.stats.loc[cdp.stats['date'] == pd.Timestamp(end_date)]['debt_cad'].values[0]
             interest_cad = cdp.stats.loc[cdp.stats['date'] == pd.Timestamp(end_date)]['interest_cad'].values[0]
             price_btc = cdp.stats.loc[cdp.stats['date'] == pd.Timestamp(end_date)]['btc_price_cad'].values[0]
@@ -258,10 +260,6 @@ def get_cost_loan_analysis(end_date=None):
             end_cost_btc = round(end_total_debt / price_btc, 4)
             print(f'END {end_date} - price:{price_btc} - end_value_btc:{end_cost_btc}, total debt:({debt}+{interest_cad}+{cdp.admin_fee})={end_total_debt}')
             print(f'diff:{(end_cost_btc - start_cost_btc)}')
-
-
-
-
 
         loan_id.append(cdp.current_debt_cad)
         cost_diff.append(round(end_cost_btc - start_cost_btc, 4))
