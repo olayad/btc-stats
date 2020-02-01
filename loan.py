@@ -233,21 +233,41 @@ def get_btc_cad_price_data_from_oldest_loan():
     return btc_cad_price
 
 
-def get_cost_loan_analysis():
-    loans = []
+def get_cost_loan_analysis(end_date=None):
+    cost_diff = []
+    loan_id = []
     for cdp in Loan.actives:
-        print('debt_history:', cdp.debt_history_cad)
+        start_total_debt = round(cdp.stats.iloc[-1]['debt_cad'] + cdp.stats.iloc[-1]['interest_cad'] + cdp.admin_fee,4)
+        start_cost_btc = round(start_total_debt / cdp.stats.iloc[-1]['btc_price_cad'], 4)
         print(cdp.stats)
-        start_value_btc = round(cdp.stats.iloc[-1]['debt_cad'] / cdp.stats.iloc[-1]['btc_price_cad'], 2)
-        print(f'START {cdp.stats.iloc[-1]["date"]} - price:{ cdp.stats.iloc[-1]["btc_price_cad"]} - btc value:{start_value_btc}')
+        print(f'date{cdp.stats.iloc[-1]["date"]}')
+        print(f'START date:{cdp.stats.iloc[-1]["date"]} - price:{ cdp.stats.iloc[-1]["btc_price_cad"]} - start_cost_btc:{start_cost_btc} - total_debt({cdp.stats.iloc[-1]["debt_cad"]}+{cdp.stats.iloc[-1]["interest_cad"]}+{cdp.admin_fee})={start_total_debt}')
+        if end_date is None:
+            end_total_debt = round(cdp.stats.iloc[0]['debt_cad'] + cdp.stats.iloc[0]['interest_cad'] + cdp.admin_fee, 4)
+            end_cost_btc = round(end_total_debt / cdp.stats.iloc[0]['btc_price_cad'], 4)
+            print(f'CURR {cdp.stats.iloc[0]["date"]} - price:{ cdp.stats.iloc[0]["btc_price_cad"]} - btc value:{end_cost_btc}')
 
-        curr_value_btc = round(cdp.stats.iloc[0]['debt_cad'] / cdp.stats.iloc[0]['btc_price_cad'], 2)
-        print(f'CURR {cdp.stats.iloc[0]["date"]} - price:{ cdp.stats.iloc[0]["btc_price_cad"]} - btc value:{curr_value_btc}')
-        loans.append({'start_date': cdp.stats.iloc[-1]["date"],
-                      'start_price_cad': cdp.stats.iloc[-1]['btc_price_cad'],
-                      'start_value_btc': start_value_btc,
-                      'curr_date': cdp.stats.iloc[0]["date"],
-                      'curr_price_cad': cdp.stats.iloc[0]['btc_price_cad'],
-                      'curr_value_btc': curr_value_btc})
+        else:
 
-    print(loans)
+            debt = cdp.stats.loc[cdp.stats['date'] == pd.Timestamp(end_date)]['debt_cad'].values[0]
+            interest_cad = cdp.stats.loc[cdp.stats['date'] == pd.Timestamp(end_date)]['interest_cad'].values[0]
+            price_btc = cdp.stats.loc[cdp.stats['date'] == pd.Timestamp(end_date)]['btc_price_cad'].values[0]
+            end_total_debt = round(debt + interest_cad + cdp.admin_fee, 4)
+
+
+            end_cost_btc = round(end_total_debt / price_btc, 4)
+            print(f'END {end_date} - price:{price_btc} - end_value_btc:{end_cost_btc}, total debt:({debt}+{interest_cad}+{cdp.admin_fee})={end_total_debt}')
+            print(f'diff:{(end_cost_btc - start_cost_btc)}')
+
+
+
+
+
+        loan_id.append(cdp.current_debt_cad)
+        cost_diff.append(round(end_cost_btc - start_cost_btc, 4))
+        print()
+
+    print(f'loan_id ', loan_id)
+    print(f'cost_diff ', cost_diff)
+    return {"loan": loan_id, "cost_diff": cost_diff}
+

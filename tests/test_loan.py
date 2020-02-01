@@ -282,7 +282,11 @@ class TestLoan(unittest.TestCase):
         df_debt = Debt().build_dataframe()
         df_stats0 = loan.Loan.actives[0].stats
         # print(df_debt.head())
-        loan.get_cost_loan_analysis()
+        res = loan.get_cost_loan_analysis(end_date='2020-01-30')
+        self.assertEqual(len(res["loan"]), 3, "Len should be 3")
+        self.assertEqual(res["cost_diff"][0], 0.1664, "Should be -0.22")
+        self.assertEqual(res["cost_diff"][1], -0.0557, "Should be -0.0557")
+        # self.assertEqual(res["cost_diff"][2], -0.0557, "Should be -0.0557")
 
 
 if __name__ == '__main__':
