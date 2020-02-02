@@ -52,10 +52,19 @@ Open `http://127.0.0.1:8050/` in your web browser.
 
 ## Running the tests
 
-To run the test suite,
+To run the entire test suite,
 
 ```
-$ ./tests/test_loan.py
+$ ./tests/runner.py all
+```
+
+To test specific modules,
+
+```
+$ ./tests/runner.py loan
+$ ./tests/runner.py debt
+$ ./tests/runner.py tools
+
 ```
 
 ## Authors

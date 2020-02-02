@@ -29,7 +29,7 @@ def get_usd_price():
 def call_exchange_api():
     response = None
     try:
-        response = requests.get(bitfinex_url, timeout=2)
+        response = requests.get(bitfinex_url, timeout=4)
     except requests.exceptions.Timeout:
         print('[ERROR] Exchange API not responding.')
         raise ThirdPartyApiUnavailable
@@ -40,7 +40,7 @@ def call_fx_api(start_date, end_date):
     response = None
     try:
         response = requests.get(bankofcanada_url+'start_date='+start_date +
-                                '&end_date='+end_date, timeout=2)
+                                '&end_date='+end_date, timeout=4)
     except requests.exceptions.Timeout:
         print('[ERROR] Bank of Canada API not responding.')
         raise ThirdPartyApiUnavailable

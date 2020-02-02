@@ -26,6 +26,11 @@ if __name__ == '__main__':
             suite.addTest(unittest.makeSuite(test_tools.TestTools))
         if test == "debt":
             suite.addTest(unittest.makeSuite(test_debt.TestDebt))
+        if test == "all":
+            suite.addTest(unittest.makeSuite(test_loan.TestLoan))
+            suite.addTest(unittest.makeSuite(test_tools.TestTools))
+            suite.addTest(unittest.makeSuite(test_debt.TestDebt))
+
 
     result = unittest.TextTestRunner(verbosity=1).run(suite)
     sys.exit(not result.wasSuccessful())
