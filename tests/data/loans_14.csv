@@ -1,4 +1,3 @@
 num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
 1,0,aaaaaaaaaaaaaaaaaaa,1.0,2019-06-23,10000,2019-06-23,800
-2,0,bbbbbbbbbbbbbbbbbbb,1.0,2020-01-27,10000,2020-01-27,800
-3,0,ccccccccccccccccccc,1.0,2020-01-01,10000,2020-01-01,800
+2,0,bbbbbbbbbbbbbbbbbbb,1.0,2020-01-01,10000,2020-01-01,800
