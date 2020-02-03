@@ -9,7 +9,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
-from loan import Loan, get_loans, update_loans_with_current_price
+from loan import Loan, get_loans, update_loans_with_current_price, get_cost_analysis
 from debt import Debt
 from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable, InvalidLoanData
 from config import set_test_mode, set_loans_input_file
@@ -38,10 +38,10 @@ except ThirdPartyApiUnavailable:
     print('[ERROR] Third party API not responding, try again later. Terminating execution.')
     sys.exit(1)
 except InvalidLoanData:
-    print('[ERROR] /data/loan.csv file has inconsistent values (duplicate loan entry?)')
-finally:
-    debt = Debt()
-    debt.build_dataframe()
+    print('[ERROR] Invalid "loan.csv" file given. ')
+    sys.exit(1)
+debt = Debt()
+debt.build_dataframe()
 
 
 app = dash.Dash()
@@ -50,6 +50,11 @@ app.layout = html.Div([
     dcc.Interval(id='interval_debt', interval=500000, n_intervals=0),
 
     html.H1(id='btc_price', children=''),
+
+    html.Div([
+       dcc.Graph(id='graph_cost_analysis')
+    ]),
+
 
     html.Div([
         dcc.Graph(id='graph_ratio')
@@ -67,18 +72,18 @@ app.layout = html.Div([
 ])
 
 
-total_coll = 0
-for l in loans:
-    total_coll += l.current_collateral
-price = 12324
-loan = 190000
-print("current collateral held by Ledn: ", total_coll)
-liquidate = (loan/price)
-print("If I wanted to liqudate (Total borrowed/\ bicoin price):", liquidate)
-print("If I want to rebalance with current price: ", liquidate * 2)
-withdraw = total_coll - (liquidate * 2)
-print(f"Could withdraw: {withdraw} - ${withdraw * price}")
-print(f"cost to rebalance (2%): {loan*(0.02)}")
+# total_coll = 0
+# for l in loans:
+#     total_coll += l.current_collateral
+# price = 12324
+# loan = 190000
+# print("current collateral held by Ledn: ", total_coll)
+# liquidate = (loan/price)
+# print("If I wanted to liqudate (Total borrowed/\ bicoin price):", liquidate)
+# print("If I want to rebalance with current price: ", liquidate * 2)
+# withdraw = total_coll - (liquidate * 2)
+# print(f"Could withdraw: {withdraw} - ${withdraw * price}")
+# print(f"cost to rebalance (2%): {loan*(0.02)}")
 
 
 @app.callback([Output('graph_debt_btc', 'figure'),
@@ -202,7 +207,8 @@ def update_graph_debt_cad():
 
 
 @app.callback([Output('btc_price', 'children'),
-               Output('graph_ratio', 'figure')],
+               Output('graph_ratio', 'figure'),
+               Output('graph_cost_analysis', 'figure')],
               [Input('interval_price', 'n_intervals')])
 def interval_price_triggered(n_intervals):
     try:
@@ -211,8 +217,10 @@ def interval_price_triggered(n_intervals):
         price = 'NA'
         print('[INFO] Third party API not available, could not update price.')
     finally:
-        figure = update_graph_ratio()
-    return price, figure
+
+        figure_ratio = update_graph_ratio()
+        figure_cost_analysis = update_graph_cost_analysis()
+    return price, figure_ratio, figure_cost_analysis
 
 
 def update_price_label():
@@ -231,12 +239,12 @@ def update_graph_ratio():
 def build_graph_ratio():
     data = []
     oldest_start_date = datetime.date.today()
-    for loan in Loan.actives:
-        if loan.start_date < oldest_start_date : oldest_start_date = loan.start_date
-        trace = go.Scatter(x=loan.stats['date'],
-                           y=loan.stats['coll_ratio'],
+    for cdp in Loan.actives:
+        if cdp.start_date < oldest_start_date : oldest_start_date = cdp.start_date
+        trace = go.Scatter(x=cdp.stats['date'],
+                           y=cdp.stats['coll_ratio'],
                            mode='lines',
-                           name='$'+str(loan.current_debt_cad))
+                           name='$'+str(cdp.current_debt_cad))
         data.append(trace)
     layout = go.Layout(title='Collateral Coverage Ratio',
                        shapes=[{'type': 'line',
@@ -278,8 +286,31 @@ def build_graph_ratio():
                            'type': 'date',
                            "autorange": True
                        })
-    figure = {'data': data, 'layout': layout}
+    return {'data': data, 'layout': layout}
+
+
+def update_graph_cost_analysis():
+    print(f'update cost analysis graph')
+    cost_data = get_cost_analysis()
+    figure = build_graph_cost_analysis(cost_data)
     return figure
+
+
+def build_graph_cost_analysis(cost_data):
+    data = []
+    red = 'rgb(255,65,54)'
+    grn = 'rgb(61,153,112)'
+    colors = [red if bar >= 0 else grn for bar in cost_data['diff']]
+    trace = go.Bar(x=cost_data['id'],
+                   y=cost_data["diff"],
+                   name='BTC',
+                   marker={'color': colors})
+    data.append(trace)
+    layout = go.Layout(title="Loan Cost Analysis",
+                       xaxis={'type': 'category'},
+                       yaxis_title="BTC",
+                       )
+    return {'data': data, 'layout': layout}
 
 
 if __name__ == '__main__':

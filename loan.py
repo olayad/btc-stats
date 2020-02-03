@@ -233,9 +233,9 @@ def get_btc_cad_price_data_from_oldest_loan():
     return btc_cad_price
 
 
-def get_cost_loan_analysis():
-    cost_diff = []
-    loan_id = []
+def get_cost_analysis():
+    diff = []
+    id = []
     for cdp in Loan.actives:
         start_total_debt = round(cdp.stats.iloc[-1]['debt_cad'] +
                                  cdp.stats.iloc[-1]['interest_cad'] +
@@ -243,13 +243,13 @@ def get_cost_loan_analysis():
         start_cost_btc = round(start_total_debt / cdp.stats.iloc[-1]['btc_price_cad'], 4)
         end_total_debt = round(cdp.stats.iloc[0]['debt_cad'] + cdp.stats.iloc[0]['interest_cad'] + cdp.admin_fee, 4)
         end_cost_btc = round(end_total_debt / cdp.stats.iloc[0]['btc_price_cad'], 4)
-        loan_id.append(cdp.current_debt_cad)
-        cost_diff.append(round(end_cost_btc - start_cost_btc, 4))
-    loan_id.append("Total")
-    cost_diff.append(round(sum(cost_diff), 4))
+        id.append(str(cdp.id)+'- $'+str(cdp.current_debt_cad))
+        diff.append(round(end_cost_btc - start_cost_btc, 4))
+    id.append("Total")
+    diff.append(round(sum(diff), 4))
 
-    print(f'****** get_cost_loan_analysis*****')
-    print(f'loan_id ', loan_id)
-    print(f'cost_diff ', cost_diff)
-    return {"loan": loan_id, "cost_diff": cost_diff}
+    print(f'\n****** get_cost_analysis*****')
+    print(f'loan_id ', id)
+    print(f'cost_diff ', diff)
+    return {"id": id, "diff": diff}
 

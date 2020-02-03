@@ -284,7 +284,7 @@ class TestLoan(unittest.TestCase):
     def test_cost_loan_analysis(self):
         cfg.set_test_mode('loans_14.csv')
         loan.init_loans()
-        res = loan.get_cost_loan_analysis()
+        res = loan.get_cost_analysis()
         i = 0
         for cdp in loan.Loan.actives:
             start_total_debt = round((cdp.stats.iloc[-1]['debt_cad'] +
@@ -296,9 +296,9 @@ class TestLoan(unittest.TestCase):
                                     cdp.admin_fee), 4)
             end_cost_btc = round(end_total_debt / cdp.stats.iloc[0]['btc_price_cad'], 4)
             diff = round(end_cost_btc - start_cost_btc, 4)
-            self.assertEqual(res["cost_diff"][i], diff, "Should be "+str(diff))
+            self.assertEqual(res["diff"][i], diff, "Should be "+str(diff))
             i += 1
-        self.assertEqual(res["cost_diff"][-1], res["cost_diff"][0] + res["cost_diff"][1],
+        self.assertEqual(res["diff"][-1], res["diff"][0] + res["diff"][1],
                          "Incorrect Total difference amount")
 
 
