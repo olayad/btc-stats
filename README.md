@@ -67,6 +67,6 @@ $ ./tests/runner.py tools
 
 ```
 
-## Authors
+## Author
 
 Daniel Olaya
