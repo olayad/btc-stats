@@ -298,7 +298,7 @@ class TestLoan(unittest.TestCase):
             diff = round(end_cost_btc - start_cost_btc, 4)
             self.assertEqual(res["diff"][i], diff, "Should be "+str(diff))
             i += 1
-        self.assertEqual(res["diff"][-1], res["diff"][0] + res["diff"][1],
+        self.assertEqual(res["diff"][-1], round(res["diff"][0] + res["diff"][1], 4),
                          "Incorrect Total difference amount")
 
 

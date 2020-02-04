@@ -247,9 +247,6 @@ def get_cost_analysis():
         diff.append(round(end_cost_btc - start_cost_btc, 4))
     id.append("Total")
     diff.append(round(sum(diff), 4))
-
-    print(f'\n****** get_cost_analysis*****')
-    print(f'loan_id ', id)
-    print(f'cost_diff ', diff)
     return {"id": id, "diff": diff}
+
 
