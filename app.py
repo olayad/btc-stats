@@ -290,7 +290,6 @@ def build_graph_ratio():
 
 
 def update_graph_cost_analysis():
-    print(f'update cost analysis graph')
     cost_data = get_cost_analysis()
     figure = build_graph_cost_analysis(cost_data)
     return figure
