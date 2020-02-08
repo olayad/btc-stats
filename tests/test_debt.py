@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
-import argparse
 import unittest
 import sys
 import os
-from datetime import datetime, date, time, timedelta
-import pandas as pd
 sys.path.append(os.path.realpath('.'))
 import config as cfg
 import loan
-import exceptions
-import tools
 from debt import Debt
 
 
