@@ -17,7 +17,7 @@ class Loan:
     def __init__(self, start_date, wallet_address, admin_fee):
         self.stats = pd.DataFrame()
         self.collateral_history = {}    # {date:{'type': _ , 'amount': _}
-        self.debt_history_cad = {}  # {date: amount}
+        self.debt_history_cad = {}      # {date: amount}
         self.current_collateral = 0
         self.current_debt_cad = 0
         self.start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
@@ -234,8 +234,7 @@ def get_btc_cad_price_data_from_oldest_loan():
 
 
 def get_cost_analysis():
-    diff = []
-    id = []
+    diff, loan_id = [], []
     for cdp in Loan.actives:
         start_total_debt = round(cdp.stats.iloc[-1]['debt_cad'] +
                                  cdp.stats.iloc[-1]['interest_cad'] +
@@ -243,10 +242,10 @@ def get_cost_analysis():
         start_cost_btc = round(start_total_debt / cdp.stats.iloc[-1]['btc_price_cad'], 4)
         end_total_debt = round(cdp.stats.iloc[0]['debt_cad'] + cdp.stats.iloc[0]['interest_cad'] + cdp.admin_fee, 4)
         end_cost_btc = round(end_total_debt / cdp.stats.iloc[0]['btc_price_cad'], 4)
-        id.append(str(cdp.id)+'- $'+str(cdp.current_debt_cad))
+        loan_id.append(str(cdp.id)+'- $'+str(cdp.current_debt_cad))
         diff.append(round(end_cost_btc - start_cost_btc, 4))
-    id.append("Total")
+    loan_id.append("Total")
     diff.append(round(sum(diff), 4))
-    return {"id": id, "diff": diff}
+    return {"id": loan_id, "diff": diff}
 
 
