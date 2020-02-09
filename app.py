@@ -299,16 +299,16 @@ def build_graph_cost_analysis(cost_data):
     data = []
     red = 'rgb(255,65,54)'
     grn = 'rgb(61,153,112)'
-    colors = [red if bar >= 0 else grn for bar in cost_data['diff']]
-    trace = go.Bar(x=cost_data['id'],
-                   y=cost_data["diff"],
+    colors = [red if bar >= 0 else grn for bar in cost_data['diff_btc']]
+    trace = go.Bar(x=cost_data['loan_id'],
+                   y=cost_data['diff_btc'],
+                   hovertext=cost_data['diff_percentage'],
                    name='BTC',
                    marker={'color': colors})
     data.append(trace)
-    layout = go.Layout(title="Loan Cost Analysis",
+    layout = go.Layout(title='Loan Cost Analysis',
                        xaxis={'type': 'category'},
-                       yaxis_title="BTC",
-                       )
+                       yaxis_title='BTC')
     return {'data': data, 'layout': layout}
 
 

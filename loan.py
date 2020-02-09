@@ -1,4 +1,5 @@
 #!/usr/bin/env/ python3
+
 import pandas as pd
 import datetime
 import tools
@@ -234,7 +235,7 @@ def get_btc_cad_price_data_from_oldest_loan():
 
 
 def get_cost_analysis():
-    diff, loan_id = [], []
+    diff_percentage, diff_btc, loan_id = [], [], []
     for cdp in Loan.actives:
         start_total_debt = round(cdp.stats.iloc[-1]['debt_cad'] +
                                  cdp.stats.iloc[-1]['interest_cad'] +
@@ -243,9 +244,13 @@ def get_cost_analysis():
         end_total_debt = round(cdp.stats.iloc[0]['debt_cad'] + cdp.stats.iloc[0]['interest_cad'] + cdp.admin_fee, 4)
         end_cost_btc = round(end_total_debt / cdp.stats.iloc[0]['btc_price_cad'], 4)
         loan_id.append(str(cdp.id)+'- $'+str(cdp.current_debt_cad))
-        diff.append(round(end_cost_btc - start_cost_btc, 4))
+        diff_btc.append(round(end_cost_btc - start_cost_btc, 4))
+        percent_change = round(((end_cost_btc / start_cost_btc) - 1), 2)
+        diff_percentage.append("Start cost: "+str(start_cost_btc) +
+                               " btc<br>Current cost: "+str(end_cost_btc) +
+                               " btc<br>Change: " + str(percent_change) + "%")
     loan_id.append("Total")
-    diff.append(round(sum(diff), 4))
-    return {"id": loan_id, "diff": diff}
+    diff_btc.append(round(sum(diff_btc), 4))
+    return {"loan_id": loan_id, "diff_btc": diff_btc, "diff_percentage": diff_percentage}
 
 
