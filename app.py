@@ -118,6 +118,12 @@ def update_graph_debt_btc():
                        xaxis={
                              'rangeselector': {'buttons': [
                                  {
+                                     "count": 1,
+                                     "label": "1 mo",
+                                     "step": "month",
+                                     "stepmode": "backward"
+                                 },
+                                 {
                                      "count": 3,
                                      "label": "3 mo",
                                      "step": "month",
@@ -126,12 +132,6 @@ def update_graph_debt_btc():
                                  {
                                      "count": 6,
                                      "label": "6 mo",
-                                     "step": "month",
-                                     "stepmode": "backward"
-                                 },
-                                 {
-                                     "count": 1,
-                                     "label": "1 yr",
                                      "step": "year",
                                      "stepmode": "backward"
                                  },
@@ -173,6 +173,12 @@ def update_graph_debt_cad():
                        xaxis={
                              'rangeselector': {'buttons': [
                                  {
+                                     "count": 1,
+                                     "label": "1 mo",
+                                     "step": "month",
+                                     "stepmode": "backward"
+                                 },
+                                 {
                                      "count": 3,
                                      "label": "3 mo",
                                      "step": "month",
@@ -181,12 +187,6 @@ def update_graph_debt_cad():
                                  {
                                      "count": 6,
                                      "label": "6 mo",
-                                     "step": "month",
-                                     "stepmode": "backward"
-                                 },
-                                 {
-                                     "count": 1,
-                                     "label": "1 yr",
                                      "step": "year",
                                      "stepmode": "backward"
                                  },
@@ -257,6 +257,12 @@ def build_graph_ratio():
                        xaxis={
                            'rangeselector': {'buttons':[
                                {
+                                   "count": 1,
+                                   "label": "1 mo",
+                                   "step": "month",
+                                   "stepmode": "backward"
+                               },
+                               {
                                    "count": 3,
                                    "label": "3 mo",
                                    "step": "month",
@@ -265,12 +271,6 @@ def build_graph_ratio():
                                {
                                    "count": 6,
                                    "label": "6 mo",
-                                   "step": "month",
-                                   "stepmode": "backward"
-                               },
-                               {
-                                   "count": 1,
-                                   "label": "1 yr",
                                    "step": "year",
                                    "stepmode": "backward"
                                },
