@@ -1,5 +1,7 @@
-import pandas as pd
 import datetime
+
+import pandas as pd
+
 from loan import Loan, find_oldest_active_loan_date, get_loans_generating_interest_at_date, \
     get_btc_cad_price_data_from_oldest_loan
 

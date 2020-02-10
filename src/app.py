@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 
-import sys
 import argparse
-import tools
 import datetime
+import sys
+
 import dash
-import dash_html_components as html
 import dash_core_components as dcc
-from dash.dependencies import Input, Output
+import dash_html_components as html
 import plotly.graph_objs as go
-from loan import Loan, get_loans, update_loans_with_current_price, get_cost_analysis
+from dash.dependencies import Input, Output
+from config import set_test_mode, set_loans_input_file
+
+import tools
 from debt import Debt
 from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable, InvalidLoanData
-from config import set_test_mode, set_loans_input_file
+from loan import Loan, get_loans, update_loans_with_current_price, get_cost_analysis
+
 
 loans = None
 debt = None
@@ -71,7 +74,7 @@ app.layout = html.Div([
     ])
 ])
 
-
+# Todo: Include this for user display info.
 # total_coll = 0
 # for l in loans:
 #     total_coll += l.current_collateral

@@ -2,8 +2,8 @@
 
 import sys
 import os
-sys.path.append(os.path.realpath('.'))
 import unittest
+sys.path.append(os.path.realpath('../src'))
 import tools
 
 

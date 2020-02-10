@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
-import argparse
 import unittest
 import sys
 import os
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, timedelta
 import pandas as pd
-sys.path.append(os.path.realpath('.'))
+sys.path.append('../src')
 import config as cfg
 import loan
 import exceptions
@@ -296,7 +295,7 @@ class TestLoan(unittest.TestCase):
                                     cdp.admin_fee), 4)
             end_cost_btc = round(end_total_debt / cdp.stats.iloc[0]['btc_price_cad'], 4)
             diff = round(end_cost_btc - start_cost_btc, 4)
-            self.assertEqual(res["diff"][i], diff, "Should be "+str(diff))
+            self.assertEqual(res["diff"][i], diff, "Should be " + str(diff))
             i += 1
         self.assertEqual(res["diff"][-1], round(res["diff"][0] + res["diff"][1], 4),
                          "Incorrect Total difference amount")

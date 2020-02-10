@@ -1,4 +1,5 @@
 import pandas as pd
+
 from exceptions import InitializationDataNotFound
 from tools import update_btcusd_csv
 
@@ -11,7 +12,7 @@ class PriceData:
 def load_input_file():
     update_btcusd_csv()
     try:
-        df_btcusd = pd.read_csv('./data/btcusd.csv')
+        df_btcusd = pd.read_csv('../data/btcusd.csv')
     except FileNotFoundError:
         print('[ERROR] Could not find file [/data/btcusd.csv].')
         raise InitializationDataNotFound

@@ -1,11 +1,12 @@
 #!/usr/bin/env/ python3
 
-import pandas as pd
 import datetime
+
+import config as cfg
+import pandas as pd
 import tools
 from exceptions import InitializationDataNotFound, InvalidLoanData
 from price_data import PriceData
-import config as cfg
 
 df_btcusd = PriceData().df_btcusd
 
@@ -150,7 +151,9 @@ def init_loans():
 def load_input_file():
     file = ''
     try:
-        file = './tests/data/'+cfg.TEST_MODE if cfg.TEST_MODE else cfg.LOANS_INPUT_FILE
+        file = './data/'+cfg.TEST_MODE if cfg.TEST_MODE else cfg.LOANS_INPUT_FILE
+
+        # file = './tests/data/'+cfg.TEST_MODE if cfg.TEST_MODE else cfg.LOANS_INPUT_FILE
         print('[INFO] Initializing loans with file: '+file)
         df_loans = pd.read_csv(file)
     except FileNotFoundError:

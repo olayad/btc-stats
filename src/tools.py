@@ -1,7 +1,9 @@
-import requests
-import json
 import datetime
+import json
+
 import pytz
+import requests
+
 from exceptions import ThirdPartyApiUnavailable
 
 quandl_url = 'https://www.quandl.com/api/v3/datasets/BCHARTS/KRAKENUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
@@ -17,7 +19,7 @@ def update_btcusd_csv():
     except requests.exceptions.Timeout:
         print('[ERROR] Quandl API not responding.')
         raise ThirdPartyApiUnavailable
-    with open('./data/btcusd.csv', 'wb+') as btcusd:
+    with open('../data/btcusd.csv', 'wb+') as btcusd:
         btcusd.write(data.content)
 
 

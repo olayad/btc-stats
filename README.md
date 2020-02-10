@@ -5,13 +5,15 @@ The tool will obtain historic BTCUSD data information from Quandl and Bitfinex t
 a Collateralization Ratio and use Bank Of Canada data (CADUSD exchange rate)
 to calculate BTC prices in CAD. 
 
-![cdp-stats-ui](./ui.png)
+![cdp-stats-ui](static/ui.png)
 
 ## Prerequisites
 
 + Clone this repository and install `requirements.txt`.
 
-+ Create input file `cdp-stats/data/loans.csv`, which should contains the following information for every CDP.
++ A sample file (`/cdp-stats/data/loan-sample.csv`) with loan data has been provided. 
+
+To use your own data, create `/cdp-stats/data/loans.csv`, a file that will contain the following information for every CDP movement.
 
 ```
 num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
@@ -35,9 +37,10 @@ num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
 
 ## Running the application
 
-To run the application (by default, looks for `./data/loans.csv` file),  
+To run the application (by default, uses for `/data/loans.csv` file),  
 
 ```
+$ cd [HOME]/cdp-stats/src/
 $ ./app.py
 ```
 
@@ -45,7 +48,7 @@ To run the application using a different input file data, run the application wi
 A sample input file has been provided, 
 
 ```
-$ ./app.py --f ./data/loans-sample.csv
+$ ./app.py --f ../data/loans-sample.csv
 ```
 
 Open `http://127.0.0.1:8050/` in your web browser.
@@ -55,15 +58,16 @@ Open `http://127.0.0.1:8050/` in your web browser.
 To run the entire test suite,
 
 ```
-$ ./tests/runner.py all
+$ cd [HOME]/cdp-stats/tests
+$ ./runner.py all
 ```
 
 To test specific modules,
 
 ```
-$ ./tests/runner.py loan
-$ ./tests/runner.py debt
-$ ./tests/runner.py tools
+$ ./runner.py loan
+$ ./runner.py debt
+$ ./runner.py tools
 
 ```
 

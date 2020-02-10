@@ -3,7 +3,7 @@
 import unittest
 import sys
 import os
-sys.path.append(os.path.realpath('.'))
+sys.path.append(os.path.realpath('../src'))
 import config as cfg
 import loan
 from debt import Debt
@@ -61,6 +61,7 @@ class TestDebt(unittest.TestCase):
                          2.04, 'Total liabilities BTC do not match')    # fixed already
         self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-07']['total_liab_btc'].values[0], 1),
                          9.1, 'Total liabilities BTC do not match')
+
 
 if __name__ == '__main__':
     unittest.main()
