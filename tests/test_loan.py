@@ -295,10 +295,10 @@ class TestLoan(unittest.TestCase):
                                     cdp.admin_fee), 4)
             end_cost_btc = round(end_total_debt / cdp.stats.iloc[0]['btc_price_cad'], 4)
             diff = round(end_cost_btc - start_cost_btc, 4)
-            self.assertEqual(res["diff"][i], diff, "Should be " + str(diff))
+            self.assertEqual(res["diff_btc"][i], diff, "Should be " + str(diff))
             i += 1
-        self.assertEqual(res["diff"][-1], round(res["diff"][0] + res["diff"][1], 4),
-                         "Incorrect Total difference amount")
+        self.assertEqual(res["diff_btc"][-1], round(res["diff_btc"][0] + res["diff_btc"][1], 4),
+                         "Incorrect Total difference btc amount")
 
 
 if __name__ == '__main__':
