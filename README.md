@@ -13,7 +13,7 @@ to calculate BTC prices in CAD.
 
 + A sample file (`/cdp-stats/data/loan-sample.csv`) with loan data has been provided. 
 
-To use your own data, create `/cdp-stats/data/loans.csv`, a file that will contain the following information for every CDP movement.
+To use your own data, create `/cdp-stats/data/loans.csv`, a file that will contain the following information for every movement in each CDP.
 
 ```
 num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
@@ -45,7 +45,8 @@ $ ./app.py
 ```
 
 To run the application using a different input file data, run the application with `--f [input_file.csv]`.
-A sample input file has been provided, 
+
+To use the sample file provided, 
 
 ```
 $ ./app.py --f ../data/loans-sample.csv
