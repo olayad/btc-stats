@@ -208,7 +208,6 @@ def update_graph_debt_cad():
     figure = {'data': data, 'layout': layout}
     return figure
 
-
 @app.callback([Output('btc_price', 'children'),
                Output('graph_ratio', 'figure'),
                Output('graph_cost_analysis', 'figure')],
@@ -220,7 +219,6 @@ def interval_price_triggered(n_intervals):
         price = 'NA'
         print('[INFO] Third party API not available, could not update price.')
     finally:
-
         figure_ratio = update_graph_ratio()
         figure_cost_analysis = update_graph_cost_analysis()
     return price, figure_ratio, figure_cost_analysis

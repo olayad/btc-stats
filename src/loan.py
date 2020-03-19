@@ -248,7 +248,7 @@ def get_cost_analysis():
         end_cost_btc = round(end_total_debt / cdp.stats.iloc[0]['btc_price_cad'], 4)
         loan_id.append(str(cdp.id)+'- $'+str(cdp.current_debt_cad))
         diff_btc.append(round(end_cost_btc - start_cost_btc, 4))
-        percent_change = round(((end_cost_btc / start_cost_btc) - 1), 2)
+        percent_change = round((((end_cost_btc * 100) / start_cost_btc) - 100), 2)
         diff_percentage.append("Start cost: "+str(start_cost_btc) +
                                " btc<br>Current cost: "+str(end_cost_btc) +
                                " btc<br>Change: " + str(percent_change) + "%")
