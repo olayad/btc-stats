@@ -135,7 +135,7 @@ def update_graph_debt_btc():
                                  {
                                      "count": 6,
                                      "label": "6 mo",
-                                     "step": "year",
+                                     "step": "month",
                                      "stepmode": "backward"
                                  },
                                  {
