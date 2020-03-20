@@ -29,14 +29,31 @@ class Debt:
         self.df_debt['total_liab_btc'] = calculate_total_liabilities_btc(self.df_debt)
 
 
+# def calculate_data():
+#     btc_cad_price, interest_cad, debt, dates = [], [], [], []
+#     oldest_active_loan_date = pd.to_datetime(find_oldest_active_loan_date())
+#     most_recent_day_in_stats = Loan.actives[0].stats.iloc[0]['date']
+#     curr_date = most_recent_day_in_stats
+#     loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
+#     while curr_date != (oldest_active_loan_date - datetime.timedelta(days=1)):
+#         borrowed_sum = interest_sum = 0
+#         for cdp in loans_generating_interest_at_date:
+#             borrowed_sum += (cdp.stats[cdp.stats['date'] == curr_date]['debt_cad'].values[0] + cdp.admin_fee)
+#             interest_sum += cdp.stats[cdp.stats['date'] == curr_date]['interest_cad'].values[0]
+#         dates.append(curr_date)
+#         interest_cad.append(round(interest_sum, 2))
+#         debt.append(round(borrowed_sum, 2))
+#         curr_date -= datetime.timedelta(days=1)
+#         loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
+#     return dates, debt, interest_cad
 def calculate_data():
     btc_cad_price, interest_cad, debt, dates = [], [], [], []
     oldest_active_loan_date = pd.to_datetime(find_oldest_active_loan_date())
     most_recent_day_in_stats = Loan.actives[0].stats.iloc[0]['date']
     curr_date = most_recent_day_in_stats
-    loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
     while curr_date != (oldest_active_loan_date - datetime.timedelta(days=1)):
         borrowed_sum = interest_sum = 0
+        loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
         for cdp in loans_generating_interest_at_date:
             borrowed_sum += (cdp.stats[cdp.stats['date'] == curr_date]['debt_cad'].values[0] + cdp.admin_fee)
             interest_sum += cdp.stats[cdp.stats['date'] == curr_date]['interest_cad'].values[0]
@@ -44,7 +61,7 @@ def calculate_data():
         interest_cad.append(round(interest_sum, 2))
         debt.append(round(borrowed_sum, 2))
         curr_date -= datetime.timedelta(days=1)
-        loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
+        # loans_generating_interest_at_date = get_loans_generating_interest_at_date(curr_date)
     return dates, debt, interest_cad
 
 

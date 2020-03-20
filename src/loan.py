@@ -1,9 +1,10 @@
 #!/usr/bin/env/ python3
 
+import pandas as pd
 import datetime
+import itertools
 
 import config as cfg
-import pandas as pd
 import tools
 from exceptions import InitializationDataNotFound, InvalidLoanData
 from price_data import PriceData
@@ -229,8 +230,14 @@ def find_oldest_active_loan_date():
 
 def get_loans_generating_interest_at_date(date):
     loans_active_at_date = []
-    for cdp in Loan.actives:
-        if cdp.start_date <= date: loans_active_at_date.append(cdp)
+    for cdp in itertools.chain(Loan.actives, Loan.closed):
+        if cdp.start_date <= date:
+            if cdp.closed_date and cdp.closed_date <= date:
+                # print(f'\t\tCDP:{cdp.id} has been closed, date:{date}')
+                continue
+            else:
+                # print(f'\t\tAppended to active at cdp id:{cdp.id}, date:{date}')
+                loans_active_at_date.append(cdp)
     return loans_active_at_date
 
 
