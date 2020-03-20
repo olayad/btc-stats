@@ -27,6 +27,8 @@ num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
 | |`1` collateral increase|
 | |`2` collateral decrease| 
 | |`3` debt (borrowed CAD) increased|
+| |`4` closed loan|
+
 |wallet_address|(str) Bitcoin address used to deposit collateral|
 |coll_amount|(float) Amount of BTC increased/decreased by `type` movement|
 |start_date|(YYYY-MM-DD) Date loan became active|

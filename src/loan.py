@@ -14,6 +14,7 @@ df_btcusd = PriceData().df_btcusd
 class Loan:
     counter = 1
     actives = []
+    closed = []
     df_loans_input_file = None
 
     def __init__(self, start_date, wallet_address, admin_fee):
@@ -25,6 +26,7 @@ class Loan:
         self.start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
         self.wallet_address = wallet_address
         self.admin_fee = admin_fee
+        self.closed_date = ""
         self.id = self.counter
         Loan.counter += 1
 
@@ -133,8 +135,9 @@ class Loan:
         return round(interest_accumulated + (cfg.DAILY_INTEREST * self.current_debt_cad), 2)
 
     def __str__(self):
-        return 'Loan_id:{:0>2d}, current_debt:${:6d}, current_collateral:{}, start_date:{}, admin_fee:{}' \
-               ''.format(self.id, self.current_debt_cad, self.current_collateral, self.start_date, self.admin_fee)
+        return (f'ID:{self.id:0>2d}, current_debt:${self.current_debt_cad:6d}, '
+                f'current_collateral:{self.current_collateral}, admin_fee:{self.admin_fee}, '
+                f'start_date:{self.start_date}, closed_date:{self.closed_date}')
 
 
 def get_loans():
@@ -146,13 +149,13 @@ def init_loans():
     Loan.df_loans_input_file = load_input_file()
     Loan.actives = create_loan_instances()
     for loan in Loan.actives: loan.calculate_loan_stats()
+    Loan.closed = archive_closed_loans(Loan.actives)
 
 
 def load_input_file():
     file = ''
     try:
         file = './data/'+cfg.TEST_MODE if cfg.TEST_MODE else cfg.LOANS_INPUT_FILE
-
         # file = './tests/data/'+cfg.TEST_MODE if cfg.TEST_MODE else cfg.LOANS_INPUT_FILE
         print('[INFO] Initializing loans with file: '+file)
         df_loans = pd.read_csv(file)
@@ -175,6 +178,8 @@ def create_loan_instances():
             update_collateral_records(active_loans, row)
         if row['type'] is cfg.DEBT_CAD_INCREASED:
             update_debt_cad_records(active_loans, row)
+        if row['type'] is cfg.CLOSED_LOAN:
+            update_closed_loan_date(active_loans, row)
     return active_loans
 
 
@@ -257,3 +262,17 @@ def get_cost_analysis():
     return {"loan_id": loan_id, "diff_btc": diff_btc, "diff_percentage": diff_percentage}
 
 
+def update_closed_loan_date(actives, csv_entry):
+    for cdp in actives:
+        if cdp.wallet_address == csv_entry['wallet_address']:
+            cdp.closed_date = datetime.datetime.strptime(csv_entry['date_update'], '%Y-%m-%d').date()
+
+
+def archive_closed_loans(active_loans):
+    closed_loans, to_remove = [], []
+    for i, cdp in enumerate(active_loans):
+        if cdp.closed_date:
+            closed_loans.append(cdp)
+            to_remove.append(i)
+    [active_loans.pop(i) for i in sorted(to_remove, reverse=True)]
+    return closed_loans
