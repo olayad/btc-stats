@@ -233,13 +233,14 @@ class TestLoan(unittest.TestCase):
                          2.0, 'Should be 2.0 in coll_ratio')
         loan.update_loans_with_current_price(price_given=123456.0)
         date_to_update = tools.get_current_date_for_exchange_api()
+        df_stats0 = loan.Loan.actives[0].stats
         self.assertEqual(df_stats0[df_stats0['date'] == date_to_update]['btc_price_usd'].values[0],
                          123456.0, 'Should be 123456.0 in btc_price_usd')
         btc_price_cad = df_stats0.loc[df_stats0['date'] == date_to_update, 'btc_price_cad'].values[0]
         coll_amount = df_stats0.loc[df_stats0['date'] == date_to_update, 'coll_amount'].values[0]
         debt_cad = df_stats0.loc[df_stats0['date'] == date_to_update, 'debt_cad'].values[0]
         new_ratio = round((btc_price_cad * coll_amount) / debt_cad, 2)
-        self.assertEqual(df_stats0[df_stats0['date'] == date_to_update]['coll_ratio'].values[0],
+        self.assertEqual(round(df_stats0[df_stats0['date'] == date_to_update]['coll_ratio'].values[0], 2),
                          new_ratio, 'Should be new coll_ratio')
 
     def test_adding_new_row_to_stats(self):
