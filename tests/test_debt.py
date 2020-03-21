@@ -62,6 +62,27 @@ class TestDebt(unittest.TestCase):
         self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-07']['total_liab_btc'].values[0], 1),
                          9.1, 'Total liabilities BTC do not match')
 
+    def test_closed_loan(self):
+        cfg.set_test_mode('debt_2.csv')
+        loan.init_loans()
+        df_debt = Debt().build_dataframe()
+        self.assertEqual(round(df_debt[df_debt['date'] == '2020-03-15']['debt_cad'].values[0], 1),
+                         2020, 'Debt cad should be 2020')
+        self.assertEqual(round(df_debt[df_debt['date'] == '2020-03-16']['debt_cad'].values[0], 1),
+                         2020, 'Debt cad should be 2020')
+        self.assertEqual(round(df_debt[df_debt['date'] == '2020-03-17']['debt_cad'].values[0], 1),
+                         1010, 'Debt cad should be 1010')
+
+        self.assertEqual(round(df_debt[df_debt['date'] == '2020-03-15']['total_liab_cad'].values[0], 2),
+                         2020.66, 'Total liab cad should be 2020.66')
+        self.assertEqual(round(df_debt[df_debt['date'] == '2020-03-16']['total_liab_cad'].values[0], 2),
+                         2021.32, 'Total liab cad should be 2021.32')
+        self.assertEqual(round(df_debt[df_debt['date'] == '2020-03-17']['total_liab_cad'].values[0], 2),
+                         1010.99, 'Total liab cad should be 1010.99')
+        self.assertEqual(round(df_debt[df_debt['date'] == '2020-03-18']['total_liab_cad'].values[0], 2),
+                         1011.32, 'Total liab cad should be 1011.32')
+
+
 
 if __name__ == '__main__':
     unittest.main()

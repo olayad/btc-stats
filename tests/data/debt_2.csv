@@ -1,0 +1,4 @@
+num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
+1,0,aaaaaaaaaaaaaaaaaaa,1.0,2020-03-15,1000,2020-03-15,10
+1,4,aaaaaaaaaaaaaaaaaaa,1.0,2020-03-15,1000,2020-03-17,0
+1,0,bbbbbbbbbbbbbbbbbbb,1.0,2020-03-15,1000,2020-03-15,10
