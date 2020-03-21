@@ -283,3 +283,7 @@ def archive_closed_loans(active_loans):
             to_remove.append(i)
     [active_loans.pop(i) for i in sorted(to_remove, reverse=True)]
     return closed_loans
+
+
+def get_closed_dates():
+    return [cdp.closed_date for cdp in Loan.closed]

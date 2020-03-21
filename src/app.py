@@ -14,7 +14,7 @@ from config import set_test_mode, set_loans_input_file
 import tools
 from debt import Debt
 from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable, InvalidLoanData
-from loan import Loan, get_loans, update_loans_with_current_price, get_cost_analysis
+from loan import Loan, get_loans, update_loans_with_current_price, get_cost_analysis, get_closed_dates
 
 
 loans = None
@@ -114,6 +114,7 @@ def update_graph_debt_btc():
                         mode='lines',
                         name='Total Liabilities')
     data = [trace1, trace2, trace3]
+    closing_dates_makers = get_closing_dates_markers(df, 'BTC')
     layout = go.Layout(title='Liabilities (BTC)',
                        legend_orientation='h',
                        showlegend=True,
@@ -149,7 +150,8 @@ def update_graph_debt_btc():
                              'rangeslider': {'visible': True},
                              'type': 'date',
                              "autorange": True
-                       })
+                       },
+                       shapes=closing_dates_makers)
     figure = {'data': data, 'layout': layout}
     return figure
 
@@ -169,6 +171,7 @@ def update_graph_debt_cad():
                         mode='lines',
                         name='Total Liabilities')
     data = [trace1, trace2, trace3]
+    closing_dates_makers = get_closing_dates_markers(df, 'CAD')
     layout = go.Layout(title='Liabilities (CAD)',
                        legend_orientation='h',
                        showlegend=True,
@@ -204,9 +207,33 @@ def update_graph_debt_cad():
                              'rangeslider': {'visible': True},
                              'type': 'date',
                              "autorange": True
-                       })
+                       },
+                       shapes=closing_dates_makers)
+
     figure = {'data': data, 'layout': layout}
     return figure
+
+
+def get_closing_dates_markers(df, currency):
+    closing_dates = get_closed_dates()
+    closed_dates_markers = []
+    for date in closing_dates:
+        closed_dates_markers.append(
+            {
+                'type': 'line',
+                'x0': date,
+                'y0': 0,
+                'x1': date,
+                'y1': df['total_liab_btc'].max() if currency == 'BTC' else df['total_liab_cad'].max(),
+                'line': {
+                    'color': 'rgb(133,20,75)',
+                    'width': 1,
+                    'dash': 'dashdot',
+                }
+            }
+        )
+    return closed_dates_markers
+
 
 @app.callback([Output('btc_price', 'children'),
                Output('graph_ratio', 'figure'),
