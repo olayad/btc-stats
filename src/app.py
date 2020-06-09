@@ -49,7 +49,7 @@ debt.build_dataframe()
 
 app = dash.Dash()
 app.layout = html.Div([
-    dcc.Interval(id='interval_price', interval=50000, n_intervals=0),
+    dcc.Interval(id='interval_price', interval=10000, n_intervals=0),
     dcc.Interval(id='interval_debt', interval=500000, n_intervals=0),
 
     html.H1(id='btc_price', children=''),
@@ -74,7 +74,7 @@ app.layout = html.Div([
     ])
 ])
 
-# # Todo: Include this for user display info.
+# TODO: Include this for user display info.
 # total_coll = 0
 # for l in loans:
 #     total_coll += l.current_collateral
@@ -274,10 +274,10 @@ def build_graph_ratio():
                            mode='lines',
                            name='$'+str(cdp.current_debt_cad))
         data.append(trace)
-    layout = go.Layout(title='Collateral Coverage Ratio',
+    layout = go.Layout(title='Loan to Value (LTV)',
                        shapes=[{'type': 'line',
-                                'y0': 2, 'x0': oldest_start_date,
-                                'y1': 2, 'x1': datetime.date.today(),
+                                'y0': 0.5, 'x0': oldest_start_date,
+                                'y1': 0.5, 'x1': datetime.date.today(),
                                 'line': {'color': 'red', 'width': 2.0, 'dash': 'dot'}}],
                        legend_orientation='h',
                        showlegend=True,

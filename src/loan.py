@@ -128,8 +128,9 @@ class Loan:
         btc_price_cad = self.stats.loc[self.stats['date'] == date_to_update, 'btc_price_cad']
         coll_amount = self.stats.loc[self.stats['date'] == date_to_update, 'coll_amount']
         debt_cad = self.stats.loc[self.stats['date'] == date_to_update, 'debt_cad']
-        current_ratio = round((btc_price_cad * coll_amount) / debt_cad, 2)
-        self.stats.loc[self.stats['date'] == date_to_update, 'coll_ratio'] = current_ratio
+        interest_cad = self.stats.loc[self.stats['date'] == date_to_update, 'interest_cad']
+        new_ltv = calculate_ltv(debt_cad, interest_cad, coll_amount, btc_price_cad)
+        self.stats.loc[self.stats['date'] == date_to_update, 'coll_ratio'] = new_ltv
 
     def calculate_new_row_interest(self):
         interest_accumulated = self.stats.iloc[0]['interest_cad']
@@ -157,7 +158,6 @@ def load_input_file():
     file = ''
     try:
         file = './data/'+cfg.TEST_MODE if cfg.TEST_MODE else cfg.LOANS_INPUT_FILE
-        # file = './tests/data/'+cfg.TEST_MODE if cfg.TEST_MODE else cfg.LOANS_INPUT_FILE
         print('[INFO] Initializing loans with file: '+file)
         df_loans = pd.read_csv(file)
     except FileNotFoundError:
@@ -233,10 +233,8 @@ def get_loans_generating_interest_at_date(date):
     for cdp in itertools.chain(Loan.actives, Loan.closed):
         if cdp.start_date <= date:
             if cdp.closed_date and cdp.closed_date <= date:
-                # print(f'\t\tCDP:{cdp.id} has been closed, date:{date}')
                 continue
             else:
-                # print(f'\t\tAppended to active at cdp id:{cdp.id}, date:{date}')
                 loans_active_at_date.append(cdp)
     return loans_active_at_date
 
@@ -289,6 +287,8 @@ def get_closed_loan_dates():
     return [cdp.closed_date for cdp in Loan.closed]
 
 
-def calculate_ltv(debt_cad, interest_cad, collateral, btc_price_cad):
-    return round((debt_cad + interest_cad) / (collateral*btc_price_cad), 2)
+def calculate_ltv(debt_cad, interest_cad, coll_amount, btc_price_cad):
+    return round((debt_cad + interest_cad) / (coll_amount * btc_price_cad), 2)
+    # TODO: change ltv to percentage in app.py LTV graph
+    # return round(((debt_cad + interest_cad) / (coll_amount * btc_price_cad) * 100), 2)
 
