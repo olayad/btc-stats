@@ -14,7 +14,7 @@ from config import set_test_mode, set_loans_input_file
 import tools
 from debt import Debt
 from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable, InvalidLoanData
-from loan import Loan, get_loans, update_loans_with_current_price, get_cost_analysis, get_closed_dates
+from loan import Loan, get_loans, update_loans_with_current_price, get_cost_analysis, get_closed_loan_dates
 
 
 loans = None
@@ -74,7 +74,7 @@ app.layout = html.Div([
     ])
 ])
 
-# Todo: Include this for user display info.
+# # Todo: Include this for user display info.
 # total_coll = 0
 # for l in loans:
 #     total_coll += l.current_collateral
@@ -215,7 +215,7 @@ def update_graph_debt_cad():
 
 
 def get_closing_dates_markers(df, currency):
-    closing_dates = get_closed_dates()
+    closing_dates = get_closed_loan_dates()
     closed_dates_markers = []
     for date in closing_dates:
         closed_dates_markers.append(

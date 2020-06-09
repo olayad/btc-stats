@@ -41,8 +41,8 @@ class Loan:
         self.stats['btc_price_cad'] = [round(row['btc_price_usd'] / float(row['fx_cadusd']), 1) for _, row in self.stats.iterrows()]
         self.stats['debt_cad'] = self.populate_debt_cad()
         self.stats['coll_amount'] = self.populate_collateral_amounts()
-        self.stats['coll_ratio'] = self.calculate_collateralization_ratio()
         self.stats['interest_cad'] = self.calculate_interest()
+        self.stats['coll_ratio'] = self.calculate_collateralization_ratio()
 
     def exchange_is_one_day_ahead_from_price_data(self, fx_rates):
         cols, _ = self.stats.shape
@@ -75,13 +75,6 @@ class Loan:
                 dates_which_had_collateral_update.pop()
         return collateral_values
 
-    def calculate_collateralization_ratio(self):
-        ratio_values = []
-        for _, row in self.stats.iterrows():
-            ratio = round((row['btc_price_cad'] * row['coll_amount']) / row['debt_cad'], 2)
-            ratio_values.append(ratio)
-        return ratio_values
-
     def calculate_interest(self):
         df_interest = []
         interest = 0
@@ -90,6 +83,13 @@ class Loan:
             interest += daily_interest
             df_interest.insert(0, round(interest, 2))
         return df_interest
+
+    def calculate_collateralization_ratio(self):
+        ltv_values = []
+        for _, row in self.stats.iterrows():
+            ltv = calculate_ltv(row['debt_cad'], row['interest_cad'], row['coll_amount'], row['btc_price_cad'])
+            ltv_values.append(ltv)
+        return ltv_values
 
     def update_stats_with_current_price(self, date_to_update, btc_price_usd):
         if self.date_to_update_is_not_in_stats(date_to_update):
@@ -105,17 +105,17 @@ class Loan:
     def append_new_row_to_stats(self, date_to_update, btc_price_usd):
         fx_rate = float(tools.get_fx_cadusd_rates(datetime.datetime.now().strftime('%Y-%m-%d'))[0])
         btc_price_cad = round(btc_price_usd / fx_rate, 1)
-        ratio = (btc_price_cad * self.current_collateral) / self.current_debt_cad
-        interest = self.calculate_new_row_interest()
+        interest_cad = self.calculate_new_row_interest()
+        ltv = calculate_ltv(self.current_debt_cad, interest_cad, self.current_collateral, btc_price_cad)
         new_row = pd.DataFrame({'date': [date_to_update],
                                 'btc_price_usd': [btc_price_usd],
                                 'fx_cadusd': [fx_rate],
                                 'btc_price_cad': [btc_price_cad],
                                 'debt_cad': [self.current_debt_cad],
                                 'coll_amount': [self.current_collateral],
-                                'coll_ratio': [ratio],
-                                'interest_cad': [interest]})
-        self.stats = pd.concat([new_row, self.stats]).reset_index(drop=True)
+                                'coll_ratio': [ltv],
+                                'interest_cad': [interest_cad]})
+        self.stats = pd.concat([new_row, self.stats], sort=True).reset_index(drop=True)
 
     def update_row_prices(self, date_to_update, btc_price_usd):
         fx_rate = float(tools.get_fx_cadusd_rates(datetime.datetime.now().strftime('%Y-%m-%d'))[0])
@@ -142,7 +142,7 @@ class Loan:
 
 
 def get_loans():
-    if len(Loan.actives) is 0: init_loans()
+    if len(Loan.actives) == 0: init_loans()
     return Loan.actives
 
 
@@ -215,7 +215,7 @@ def update_debt_cad_records(loans, csv_entry):
             cdp.current_debt_cad += csv_entry['debt_cad']
 
 
-def update_loans_with_current_price(date_given=0, price_given=0):
+def update_loans_with_current_price(date_given: object = 0, price_given: object = 0) -> object:
     date = tools.get_current_date_for_exchange_api() if not date_given else date_given
     price = price_given if price_given else tools.get_usd_price()
     for cdp in Loan.actives: cdp.update_stats_with_current_price(pd.Timestamp(date), float(price))
@@ -285,5 +285,10 @@ def archive_closed_loans(active_loans):
     return closed_loans
 
 
-def get_closed_dates():
+def get_closed_loan_dates():
     return [cdp.closed_date for cdp in Loan.closed]
+
+
+def calculate_ltv(debt_cad, interest_cad, collateral, btc_price_cad):
+    return round((debt_cad + interest_cad) / (collateral*btc_price_cad), 2)
+

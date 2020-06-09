@@ -14,14 +14,17 @@ from debt import Debt
 
 
 class TestLoan(unittest.TestCase):
-
-
     def setUp(self):
         # Resetting class variables between tests
         loan.Loan.counter = 1
         loan.Loan.actives = []
         loan.Loan.closed = []
         loan.Loan.df_loans_input_file = None
+        # Show all rows/columns when pandas DF is printed
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', None)
+        pd.set_option('display.max_colwidth', -1)
 
     def test_invalid_loan_csv_data(self):
         cfg.set_test_mode('loans_0.csv')
@@ -216,30 +219,33 @@ class TestLoan(unittest.TestCase):
         cfg.set_test_mode('loans_8.csv')
         loan.init_loans()
         df_stats0 = loan.Loan.actives[0].stats
-        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-01']['coll_ratio'].values[0], 1),
-                         2.0, 'Should be 2.0 in coll_ratio')
-        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-02']['coll_ratio'].values[0], 1),
-                         3.1, 'Should be 3.1 in coll_ratio')
-        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-03']['coll_ratio'].values[0], 1),
-                         2.5, 'Should be 2.5 in coll_ratio')
-        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-04']['coll_ratio'].values[0], 1),
-                         2.4, 'Should be 2.4 in coll_ratio')
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-01']['coll_ratio'].values[0], 2),
+                         0.49, 'Should be 0.49 in LTV')
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-02']['coll_ratio'].values[0], 2),
+                         0.33, 'Should be 0.33 in LTV')
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-03']['coll_ratio'].values[0], 2),
+                         0.40, 'Should be 0.40 in LTV')
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-04']['coll_ratio'].values[0], 2),
+                         0.42, 'Should be 0.42 in LTV')
 
     def test_updating_ratio_with_current_price(self):
         cfg.set_test_mode('loans_9.csv')
         loan.init_loans()
         df_stats0 = loan.Loan.actives[0].stats
-        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-01']['coll_ratio'].values[0], 1),
-                         2.0, 'Should be 2.0 in coll_ratio')
-        loan.update_loans_with_current_price(price_given=123456.0)
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-01']['coll_ratio'].values[0], 2),
+                         0.49, 'Should be 0.49 in LTV')
+        new_price_usd = 15000.0
+        loan.update_loans_with_current_price(price_given=new_price_usd)
         date_to_update = tools.get_current_date_for_exchange_api()
         df_stats0 = loan.Loan.actives[0].stats
+
         self.assertEqual(df_stats0[df_stats0['date'] == date_to_update]['btc_price_usd'].values[0],
-                         123456.0, 'Should be 123456.0 in btc_price_usd')
-        btc_price_cad = df_stats0.loc[df_stats0['date'] == date_to_update, 'btc_price_cad'].values[0]
+                         new_price_usd, 'Should be '+str(new_price_usd)+' in btc_price_usd')
         coll_amount = df_stats0.loc[df_stats0['date'] == date_to_update, 'coll_amount'].values[0]
         debt_cad = df_stats0.loc[df_stats0['date'] == date_to_update, 'debt_cad'].values[0]
-        new_ratio = round((btc_price_cad * coll_amount) / debt_cad, 2)
+        interest_cad = df_stats0.loc[df_stats0['date'] == date_to_update, 'interest_cad'].values[0]
+        new_price_cad = df_stats0.loc[df_stats0['date'] == date_to_update, 'btc_price_cad'].values[0]
+        new_ratio = round((debt_cad + interest_cad) / (coll_amount * new_price_cad), 2)
         self.assertEqual(round(df_stats0[df_stats0['date'] == date_to_update]['coll_ratio'].values[0], 2),
                          new_ratio, 'Should be new coll_ratio')
 
