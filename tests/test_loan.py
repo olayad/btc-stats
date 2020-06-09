@@ -219,20 +219,20 @@ class TestLoan(unittest.TestCase):
         cfg.set_test_mode('loans_8.csv')
         loan.init_loans()
         df_stats0 = loan.Loan.actives[0].stats
-        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-01']['coll_ratio'].values[0], 2),
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-01']['ltv'].values[0], 2),
                          0.49, 'Should be 0.49 in LTV')
-        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-02']['coll_ratio'].values[0], 2),
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-02']['ltv'].values[0], 2),
                          0.33, 'Should be 0.33 in LTV')
-        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-03']['coll_ratio'].values[0], 2),
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-03']['ltv'].values[0], 2),
                          0.40, 'Should be 0.40 in LTV')
-        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-04']['coll_ratio'].values[0], 2),
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-04']['ltv'].values[0], 2),
                          0.42, 'Should be 0.42 in LTV')
 
     def test_updating_ratio_with_current_price(self):
         cfg.set_test_mode('loans_9.csv')
         loan.init_loans()
         df_stats0 = loan.Loan.actives[0].stats
-        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-01']['coll_ratio'].values[0], 2),
+        self.assertEqual(round(df_stats0[df_stats0['date'] == '2019-11-01']['ltv'].values[0], 2),
                          0.49, 'Should be 0.49 in LTV')
         new_price_usd = 15000.0
         loan.update_loans_with_current_price(price_given=new_price_usd)
@@ -246,8 +246,8 @@ class TestLoan(unittest.TestCase):
         interest_cad = df_stats0.loc[df_stats0['date'] == date_to_update, 'interest_cad'].values[0]
         new_price_cad = df_stats0.loc[df_stats0['date'] == date_to_update, 'btc_price_cad'].values[0]
         new_ratio = round((debt_cad + interest_cad) / (coll_amount * new_price_cad), 2)
-        self.assertEqual(round(df_stats0[df_stats0['date'] == date_to_update]['coll_ratio'].values[0], 2),
-                         new_ratio, 'Should be new coll_ratio')
+        self.assertEqual(round(df_stats0[df_stats0['date'] == date_to_update]['ltv'].values[0], 2),
+                         new_ratio, 'Should be new ltv')
 
     def test_adding_new_row_to_stats(self):
         cfg.set_test_mode('loans_10.csv')

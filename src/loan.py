@@ -42,7 +42,8 @@ class Loan:
         self.stats['debt_cad'] = self.populate_debt_cad()
         self.stats['coll_amount'] = self.populate_collateral_amounts()
         self.stats['interest_cad'] = self.calculate_interest()
-        self.stats['coll_ratio'] = self.calculate_collateralization_ratio()
+        self.stats['ltv'] = self.calculate_loan_ltv()
+        # TODO: change all references from str coll_ratio to ltv
 
     def exchange_is_one_day_ahead_from_price_data(self, fx_rates):
         cols, _ = self.stats.shape
@@ -84,7 +85,7 @@ class Loan:
             df_interest.insert(0, round(interest, 2))
         return df_interest
 
-    def calculate_collateralization_ratio(self):
+    def calculate_loan_ltv(self):
         ltv_values = []
         for _, row in self.stats.iterrows():
             ltv = calculate_ltv(row['debt_cad'], row['interest_cad'], row['coll_amount'], row['btc_price_cad'])
@@ -96,7 +97,7 @@ class Loan:
             self.append_new_row_to_stats(date_to_update, btc_price_usd)
         else:
             self.update_row_prices(date_to_update, btc_price_usd)
-            self.update_row_ratio(date_to_update, btc_price_usd)
+            self.update_row_ltv(date_to_update, btc_price_usd)
 
     def date_to_update_is_not_in_stats(self, date_to_update):
         df_earliest_date = self.stats.iloc[0]['date']
@@ -113,7 +114,7 @@ class Loan:
                                 'btc_price_cad': [btc_price_cad],
                                 'debt_cad': [self.current_debt_cad],
                                 'coll_amount': [self.current_collateral],
-                                'coll_ratio': [ltv],
+                                'ltv': [ltv],
                                 'interest_cad': [interest_cad]})
         self.stats = pd.concat([new_row, self.stats], sort=True).reset_index(drop=True)
 
@@ -124,13 +125,13 @@ class Loan:
         self.stats.loc[self.stats['date'] == date_to_update, 'btc_price_usd'] = btc_price_usd
         self.stats.loc[self.stats['date'] == date_to_update, 'btc_price_cad'] = btc_price_cad
 
-    def update_row_ratio(self, date_to_update, btc_price_usd):
+    def update_row_ltv(self, date_to_update, btc_price_usd):
         btc_price_cad = self.stats.loc[self.stats['date'] == date_to_update, 'btc_price_cad']
         coll_amount = self.stats.loc[self.stats['date'] == date_to_update, 'coll_amount']
         debt_cad = self.stats.loc[self.stats['date'] == date_to_update, 'debt_cad']
         interest_cad = self.stats.loc[self.stats['date'] == date_to_update, 'interest_cad']
         new_ltv = calculate_ltv(debt_cad, interest_cad, coll_amount, btc_price_cad)
-        self.stats.loc[self.stats['date'] == date_to_update, 'coll_ratio'] = new_ltv
+        self.stats.loc[self.stats['date'] == date_to_update, 'ltv'] = new_ltv
 
     def calculate_new_row_interest(self):
         interest_accumulated = self.stats.iloc[0]['interest_cad']

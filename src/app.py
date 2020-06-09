@@ -270,7 +270,7 @@ def build_graph_ratio():
     for cdp in Loan.actives:
         if cdp.start_date < oldest_start_date : oldest_start_date = cdp.start_date
         trace = go.Scatter(x=cdp.stats['date'],
-                           y=cdp.stats['coll_ratio'],
+                           y=cdp.stats['ltv'],
                            mode='lines',
                            name='$'+str(cdp.current_debt_cad))
         data.append(trace)
