@@ -75,20 +75,6 @@ app.layout = html.Div([
     ])
 ])
 
-# TODO: Include this for user display info.
-# total_coll = 0
-# for l in loans:
-#     print(f'{l}')
-#     total_coll += l.current_collateral
-# price = 12324
-# loan = 190000
-# print("current collateral held by Ledn: ", total_coll)
-# liquidate = (loan/price)
-# print("If I wanted to liqudate (Total borrowed/\ bicoin price):", liquidate)
-# print("If I want to rebalance with current price: ", liquidate * 2)
-# withdraw = total_coll - (liquidate * 2)
-# print(f"Could withdraw: {withdraw} - ${withdraw * price}")
-# print(f"cost to rebalance (2%): {loan*(0.02)}")
 
 @app.callback(Output('btc_price', 'children'),
               [Input('interval_price', 'n_intervals')])
@@ -345,5 +331,26 @@ def get_closing_dates_markers(df, currency):
         )
     return closed_dates_markers
 
+
+def loans_overview():
+    total_coll = 0
+    print(f'\n################################################################################')
+    print(f'##############################      OVERVIEW      ##############################')
+    print(f'################################################################################')
+    for loan in loans:
+        print(f'{loan}')
+        total_coll += loan.current_collateral
+    print("- Total collateral: ", total_coll)
+    # liquidate = (loan/price)
+    # print("If I want to rebalance with current price: ", liquidate * 2)
+    # withdraw = total_coll - (liquidate * 2)
+    # print(f"Could withdraw: {withdraw} - ${withdraw * price}")
+    # print(f"cost to rebalance (2%): {loan*(0.02)}")
+    print(f'################################################################################\n')
+
+
+loans_overview()
+
 if __name__ == '__main__':
     app.run_server()
+
