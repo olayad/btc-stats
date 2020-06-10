@@ -138,7 +138,7 @@ def build_graph_ltv():
                                {
                                    "count": 6,
                                    "label": "6 mo",
-                                   "step": "year",
+                                   "step": "month",
                                    "stepmode": "backward"
                                },
                                {
