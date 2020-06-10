@@ -10,7 +10,8 @@ quandl_url = 'https://www.quandl.com/api/v3/datasets/BCHARTS/KRAKENUSD.csv?api_k
 bitfinex_url = 'https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD'
 bankofcanada_url = 'https://www.bankofcanada.ca/valet/observations/FXCADUSD/json?'
 
-AVG_FXCADUSD = 0.753    # Last updated Nov 23, 2019
+# TODO: Move below to config
+AVG_FXCADUSD = 0.80  # Last updated June, 2020
 
 
 def update_btcusd_csv():

@@ -43,7 +43,6 @@ class Loan:
         self.stats['coll_amount'] = self.populate_collateral_amounts()
         self.stats['interest_cad'] = self.calculate_interest()
         self.stats['ltv'] = self.calculate_loan_ltv()
-        # TODO: change all references from str coll_ratio to ltv
 
     def exchange_is_one_day_ahead_from_price_data(self, fx_rates):
         cols, _ = self.stats.shape

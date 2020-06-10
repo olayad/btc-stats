@@ -23,7 +23,7 @@ debt = None
 parser = argparse.ArgumentParser(description='CDP stats server.')
 
 parser.add_argument('-t', '--test', help='Specify the test suite (/tests/data/[loans-x].csv file to run')
-parser.add_argument('-f', '--file', help='Specify the \'/data/[loans].csv\' file to run')
+parser.add_argument('-f', '--file', help='Specify the file path to run as follows: \'../data/[loans].csv\'')
 
 args = parser.parse_args()
 if args.test:
@@ -49,7 +49,9 @@ debt.build_dataframe()
 
 app = dash.Dash()
 app.layout = html.Div([
-    dcc.Interval(id='interval_price', interval=10000, n_intervals=0),
+    dcc.Interval(id='interval_price', interval=100000, n_intervals=0),
+    dcc.Interval(id='interval_ltv', interval=500000, n_intervals=0),
+    dcc.Interval(id='interval_cost_analysis', interval=500000, n_intervals=0),
     dcc.Interval(id='interval_debt', interval=500000, n_intervals=0),
 
     html.H1(id='btc_price', children=''),
@@ -58,9 +60,8 @@ app.layout = html.Div([
        dcc.Graph(id='graph_cost_analysis')
     ]),
 
-
     html.Div([
-        dcc.Graph(id='graph_ratio')
+        dcc.Graph(id='graph_ltv')
     ]),
 
     html.Div([
@@ -77,6 +78,7 @@ app.layout = html.Div([
 # TODO: Include this for user display info.
 # total_coll = 0
 # for l in loans:
+#     print(f'{l}')
 #     total_coll += l.current_collateral
 # price = 12324
 # loan = 190000
@@ -88,167 +90,11 @@ app.layout = html.Div([
 # print(f"Could withdraw: {withdraw} - ${withdraw * price}")
 # print(f"cost to rebalance (2%): {loan*(0.02)}")
 
-
-@app.callback([Output('graph_debt_btc', 'figure'),
-               Output('graph_debt_cad', 'figure')],
-              [Input('interval_debt', 'n_intervals')])
-def interval_debt_triggered(n_intervals):
-    debt.update_df_with_current_price()
-    figure_btc = update_graph_debt_btc()
-    figure_cad = update_graph_debt_cad()
-    return figure_btc, figure_cad
-
-
-def update_graph_debt_btc():
-    df = debt.df_debt
-    trace1 = go.Scatter(x=df['date'],
-                        y=df['debt_btc'],
-                        mode='lines',
-                        name='Debt')
-    trace2 = go.Scatter(x=df['date'],
-                        y=df['interest_btc'],
-                        mode='lines',
-                        name='Interest')
-    trace3 = go.Scatter(x=df['date'],
-                        y=df['total_liab_btc'],
-                        mode='lines',
-                        name='Total Liabilities')
-    data = [trace1, trace2, trace3]
-    closing_dates_makers = get_closing_dates_markers(df, 'BTC')
-    layout = go.Layout(title='Liabilities (BTC)',
-                       legend_orientation='h',
-                       showlegend=True,
-                       yaxis_title="BTC",
-                       xaxis={
-                             'rangeselector': {'buttons': [
-                                 {
-                                     "count": 1,
-                                     "label": "1 mo",
-                                     "step": "month",
-                                     "stepmode": "backward"
-                                 },
-                                 {
-                                     "count": 3,
-                                     "label": "3 mo",
-                                     "step": "month",
-                                     "stepmode": "backward"
-                                 },
-                                 {
-                                     "count": 6,
-                                     "label": "6 mo",
-                                     "step": "month",
-                                     "stepmode": "backward"
-                                 },
-                                 {
-                                     "count": 1,
-                                     "label": "YTD",
-                                     "step": "year",
-                                     "stepmode": "todate"
-                                 },
-                                 {"step": "all"}
-                             ]},
-                             'rangeslider': {'visible': True},
-                             'type': 'date',
-                             "autorange": True
-                       },
-                       shapes=closing_dates_makers)
-    figure = {'data': data, 'layout': layout}
-    return figure
-
-
-def update_graph_debt_cad():
-    df = debt.df_debt
-    trace1 = go.Scatter(x=df['date'],
-                        y=df['debt_cad'],
-                        mode='lines',
-                        name='Debt')
-    trace2 = go.Scatter(x=df['date'],
-                        y=df['interest_cad'],
-                        mode='lines',
-                        name='Interest')
-    trace3 = go.Scatter(x=df['date'],
-                        y=df['total_liab_cad'],
-                        mode='lines',
-                        name='Total Liabilities')
-    data = [trace1, trace2, trace3]
-    closing_dates_makers = get_closing_dates_markers(df, 'CAD')
-    layout = go.Layout(title='Liabilities (CAD)',
-                       legend_orientation='h',
-                       showlegend=True,
-                       yaxis_title="CAD",
-                       xaxis={
-                             'rangeselector': {'buttons': [
-                                 {
-                                     "count": 1,
-                                     "label": "1 mo",
-                                     "step": "month",
-                                     "stepmode": "backward"
-                                 },
-                                 {
-                                     "count": 3,
-                                     "label": "3 mo",
-                                     "step": "month",
-                                     "stepmode": "backward"
-                                 },
-                                 {
-                                     "count": 6,
-                                     "label": "6 mo",
-                                     "step": "year",
-                                     "stepmode": "backward"
-                                 },
-                                 {
-                                     "count": 1,
-                                     "label": "YTD",
-                                     "step": "year",
-                                     "stepmode": "todate"
-                                 },
-                                 {"step": "all"}
-                             ]},
-                             'rangeslider': {'visible': True},
-                             'type': 'date',
-                             "autorange": True
-                       },
-                       shapes=closing_dates_makers)
-
-    figure = {'data': data, 'layout': layout}
-    return figure
-
-
-def get_closing_dates_markers(df, currency):
-    closing_dates = get_closed_loan_dates()
-    closed_dates_markers = []
-    for date in closing_dates:
-        closed_dates_markers.append(
-            {
-                'type': 'line',
-                'x0': date,
-                'y0': 0,
-                'x1': date,
-                'y1': df['total_liab_btc'].max() if currency == 'BTC' else df['total_liab_cad'].max(),
-                'line': {
-                    'color': 'rgb(133,20,75)',
-                    'width': 1,
-                    'dash': 'dashdot',
-                }
-            }
-        )
-    return closed_dates_markers
-
-
-@app.callback([Output('btc_price', 'children'),
-               Output('graph_ratio', 'figure'),
-               Output('graph_cost_analysis', 'figure')],
+@app.callback(Output('btc_price', 'children'),
               [Input('interval_price', 'n_intervals')])
-def interval_price_triggered(n_intervals):
-    try:
-        price = update_price_label()
-    except ThirdPartyApiUnavailable:
-        price = 'NA'
-        print('[INFO] Third party API not available, could not update price.')
-    finally:
-        figure_ratio = update_graph_ratio()
-        figure_cost_analysis = update_graph_cost_analysis()
-    return price, figure_ratio, figure_cost_analysis
+def on_price_interval(n_intervals):
+    price = update_price_label()
+    return price
 
 
 def update_price_label():
@@ -258,13 +104,20 @@ def update_price_label():
     return 'BTC: '+str(price_usd)+' USD / '+str(price_cad)+' CAD'
 
 
-def update_graph_ratio():
-    update_loans_with_current_price()
-    figure = build_graph_ratio()
+@app.callback(Output('graph_ltv', 'figure'),
+              [Input('interval_ltv', 'n_intervals')])
+def on_ltv_interval(n_intervals):
+    figure = update_graph_ltv()
     return figure
 
 
-def build_graph_ratio():
+def update_graph_ltv():
+    update_loans_with_current_price()
+    figure = build_graph_ltv()
+    return figure
+
+
+def build_graph_ltv():
     data = []
     oldest_start_date = datetime.date.today()
     for cdp in Loan.actives:
@@ -317,6 +170,13 @@ def build_graph_ratio():
     return {'data': data, 'layout': layout}
 
 
+@app.callback(Output('graph_cost_analysis', 'figure'),
+              [Input('interval_cost_analysis', 'n_intervals')])
+def on_cost_analysis_interval(n_intervals):
+    figure = update_graph_cost_analysis()
+    return figure
+
+
 def update_graph_cost_analysis():
     cost_data = get_cost_analysis()
     figure = build_graph_cost_analysis(cost_data)
@@ -339,6 +199,151 @@ def build_graph_cost_analysis(cost_data):
                        yaxis_title='BTC')
     return {'data': data, 'layout': layout}
 
+
+@app.callback([Output('graph_debt_btc', 'figure'),
+               Output('graph_debt_cad', 'figure')],
+              [Input('interval_debt', 'n_intervals')])
+def interval_debt_triggered(n_intervals):
+    debt.update_df_with_current_price()
+    figure_btc = update_graph_debt_btc()
+    figure_cad = update_graph_debt_cad()
+    return figure_btc, figure_cad
+
+
+def update_graph_debt_btc():
+    df = debt.df_debt
+    trace1 = go.Scatter(x=df['date'],
+                        y=df['debt_btc'],
+                        mode='lines',
+                        name='Debt')
+    trace2 = go.Scatter(x=df['date'],
+                        y=df['interest_btc'],
+                        mode='lines',
+                        name='Interest')
+    trace3 = go.Scatter(x=df['date'],
+                        y=df['total_liab_btc'],
+                        mode='lines',
+                        name='Total Liabilities')
+    data = [trace1, trace2, trace3]
+    closing_dates_makers = get_closing_dates_markers(df, 'BTC')
+    layout = go.Layout(title='Liabilities (BTC)',
+                       legend_orientation='h',
+                       showlegend=True,
+                       yaxis_title="BTC",
+                       xaxis={
+                           'rangeselector': {'buttons': [
+                               {
+                                   "count": 1,
+                                   "label": "1 mo",
+                                   "step": "month",
+                                   "stepmode": "backward"
+                               },
+                               {
+                                   "count": 3,
+                                   "label": "3 mo",
+                                   "step": "month",
+                                   "stepmode": "backward"
+                               },
+                               {
+                                   "count": 6,
+                                   "label": "6 mo",
+                                   "step": "month",
+                                   "stepmode": "backward"
+                               },
+                               {
+                                   "count": 1,
+                                   "label": "YTD",
+                                   "step": "year",
+                                   "stepmode": "todate"
+                               },
+                               {"step": "all"}
+                           ]},
+                           'rangeslider': {'visible': True},
+                           'type': 'date',
+                           "autorange": True
+                       },
+                       shapes=closing_dates_makers)
+    figure = {'data': data, 'layout': layout}
+    return figure
+
+
+def update_graph_debt_cad():
+    df = debt.df_debt
+    trace1 = go.Scatter(x=df['date'],
+                        y=df['debt_cad'],
+                        mode='lines',
+                        name='Debt')
+    trace2 = go.Scatter(x=df['date'],
+                        y=df['interest_cad'],
+                        mode='lines',
+                        name='Interest')
+    trace3 = go.Scatter(x=df['date'],
+                        y=df['total_liab_cad'],
+                        mode='lines',
+                        name='Total Liabilities')
+    data = [trace1, trace2, trace3]
+    closing_dates_makers = get_closing_dates_markers(df, 'CAD')
+    layout = go.Layout(title='Liabilities (CAD)',
+                       legend_orientation='h',
+                       showlegend=True,
+                       yaxis_title="CAD",
+                       xaxis={
+                           'rangeselector': {'buttons': [
+                               {
+                                   "count": 1,
+                                   "label": "1 mo",
+                                   "step": "month",
+                                   "stepmode": "backward"
+                               },
+                               {
+                                   "count": 3,
+                                   "label": "3 mo",
+                                   "step": "month",
+                                   "stepmode": "backward"
+                               },
+                               {
+                                   "count": 6,
+                                   "label": "6 mo",
+                                   "step": "year",
+                                   "stepmode": "backward"
+                               },
+                               {
+                                   "count": 1,
+                                   "label": "YTD",
+                                   "step": "year",
+                                   "stepmode": "todate"
+                               },
+                               {"step": "all"}
+                           ]},
+                           'rangeslider': {'visible': True},
+                           'type': 'date',
+                           "autorange": True
+                       },
+                       shapes=closing_dates_makers)
+
+    figure = {'data': data, 'layout': layout}
+    return figure
+
+
+def get_closing_dates_markers(df, currency):
+    closing_dates = get_closed_loan_dates()
+    closed_dates_markers = []
+    for date in closing_dates:
+        closed_dates_markers.append(
+            {
+                'type': 'line',
+                'x0': date,
+                'y0': 0,
+                'x1': date,
+                'y1': df['total_liab_btc'].max() if currency == 'BTC' else df['total_liab_cad'].max(),
+                'line': {
+                    'color': 'rgb(133,20,75)',
+                    'width': 1,
+                    'dash': 'dashdot',
+                }
+            }
+        )
+    return closed_dates_markers
 
 if __name__ == '__main__':
     app.run_server()
