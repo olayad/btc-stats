@@ -7,6 +7,7 @@ import argparse
 import test_loan
 import test_debt
 import test_tools
+import test_savings
 
 
 if __name__ == '__main__':
@@ -20,6 +21,8 @@ if __name__ == '__main__':
     suite = unittest.TestSuite()
 
     for test in args.testcase:
+        if test == "savings" or test == "saving" or test == "savings.py":
+            suite.addTest(unittest.makeSuite(test_loan.TestLoan))
         if test == "loans" or test == "loan" or test == "loan.py":
             suite.addTest(unittest.makeSuite(test_loan.TestLoan))
         if test == "tools" or test == "tool" or test == "tools.py":
@@ -28,6 +31,7 @@ if __name__ == '__main__':
             suite.addTest(unittest.makeSuite(test_debt.TestDebt))
         if test == "all":
             suite.addTest(unittest.makeSuite(test_loan.TestLoan))
+            suite.addTest(unittest.makeSuite(test_savings.TestSavings))
             suite.addTest(unittest.makeSuite(test_tools.TestTools))
             suite.addTest(unittest.makeSuite(test_debt.TestDebt))
 

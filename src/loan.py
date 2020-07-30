@@ -16,7 +16,7 @@ class Loan:
     counter = 1
     actives = []
     closed = []
-    df_loans_input_file = None
+    input_file_df = None
 
     def __init__(self, start_date, wallet_address, admin_fee):
         self.stats = pd.DataFrame()
@@ -148,7 +148,7 @@ def get_loans():
 
 
 def init_loans():
-    Loan.df_loans_input_file = load_input_file()
+    Loan.input_file_df = load_input_file()
     Loan.actives = create_loan_instances()
     for loan in Loan.actives: loan.calculate_loan_stats()
     Loan.closed = archive_closed_loans(Loan.actives)
@@ -159,17 +159,17 @@ def load_input_file():
     try:
         file = './data/'+cfg.TEST_MODE if cfg.TEST_MODE else cfg.LOANS_INPUT_FILE
         print('[INFO] Initializing loans with file: '+file)
-        df_loans = pd.read_csv(file)
+        df = pd.read_csv(file)
     except FileNotFoundError:
         print('[ERROR] Could not find file [{}]'.format(file))
         raise InitializationDataNotFound
-    df_loans.set_index('num', inplace=True)
-    return df_loans
+    df.set_index('num', inplace=True)
+    return df
 
 
 def create_loan_instances():
     active_loans = []
-    for index, row in Loan.df_loans_input_file.iterrows():
+    for index, row in Loan.input_file_df.iterrows():
         if row['type'] is cfg.NEW_LOAN:
             if new_loan_entry_is_valid(active_loans, row):
                 active_loans.append(instantiate_new_loan(row))

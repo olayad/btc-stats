@@ -11,7 +11,13 @@ to calculate BTC prices in CAD.
 
 + Clone this repository and install `requirements.txt`.
 
-+ A sample file (`/cdp-stats/data/loan-sample.csv`) with loan data has been provided. 
++ This program uses two files for loan and savings inputs.
+  + Loan sample file provided at (`/cdp-stats/data/loan-sample.csv`). 
+  #TODO: Create sample file
+  + Savings sample file provided at (`/cdp-stats/data/savings-sample.csv`). 
+  
+
+### Loan file
 
 To use your own data, create `/cdp-stats/data/loans.csv`, a file that will contain the following information for every movement in each CDP.
 
@@ -28,7 +34,6 @@ num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
 | |`2` collateral decrease| 
 | |`3` debt (borrowed CAD) increased|
 | |`4` closed loan|
-
 |wallet_address|(str) Bitcoin address used to deposit collateral|
 |coll_amount|(float) Amount of BTC increased/decreased by `type` movement|
 |start_date|(YYYY-MM-DD) Date loan became active|
@@ -36,6 +41,21 @@ num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
 |date_update|(YYYY-MM-DD) Date loan reflected `type` movement|
 |admin_fee|(int) Fee charged at the start of loan|
 
+### Savings file
+
+To use your own data, create `/cdp-stats/data/savings.csv`.
+
+```
+num,type,saving_amount_btc,start_date,interest_rate
+ ```
+
+| CSV column   |Description|
+| ---------|-----------|
+| num      |(int) Consecutive counter used as index | 
+| type     |(int) type of movement,|
+| |`0` amount of BTC savings increased|
+| |`1` amount of BTC savings decreased|
+| |`2` interest rate change|
 
 ## Running the application
 

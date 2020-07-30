@@ -19,7 +19,7 @@ class TestLoan(unittest.TestCase):
         loan.Loan.counter = 1
         loan.Loan.actives = []
         loan.Loan.closed = []
-        loan.Loan.df_loans_input_file = None
+        loan.Loan.input_file_df = None
         # Show all rows/columns when pandas DF is printed
         pd.set_option('display.max_rows', None)
         pd.set_option('display.max_columns', None)
