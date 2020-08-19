@@ -20,6 +20,7 @@ class Savings:
 def init_savings():
     Savings.input_file_df = load_input_file()
 
+
 def load_input_file():
     file = ''
     try:

@@ -36,9 +36,9 @@ num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
 | |`4` closed loan|
 |wallet_address|(str) Bitcoin address used to deposit collateral|
 |coll_amount|(float) Amount of BTC increased/decreased by `type` movement|
-|start_date|(YYYY-MM-DD) Date loan became active|
+|start_date| (str) Format: YYYY-MM-DD ; Date loan became active|
 |debt_cad|(float) Amount of CAD increased by `type` movement|
-|date_update|(YYYY-MM-DD) Date loan reflected `type` movement|
+|date_update| (str) Format: YYYY-MM-DD ; Date loan reflected `type` movement|
 |admin_fee|(int) Fee charged at the start of loan|
 
 ### Savings file
@@ -46,16 +46,19 @@ num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
 To use your own data, create `/cdp-stats/data/savings.csv`.
 
 ```
-num,type,saving_amount_btc,start_date,interest_rate
+num,type,saving_amount_btc,date_movement,interest_rate
  ```
 
 | CSV column   |Description|
 | ---------|-----------|
-| num      |(int) Consecutive counter used as index | 
-| type     |(int) type of movement,|
-| |`0` amount of BTC savings increased|
-| |`1` amount of BTC savings decreased|
-| |`2` interest rate change|
+| num       |(int) Consecutive counter used as index | 
+| type      |(int) type of movement,|
+|           |`0` amount of BTC savings increased|
+|           |`1` amount of BTC savings decreased|
+|           |`2` interest rate change|
+| saving amount | (float) BTC amount |
+| date_movement | (str) Format: YYYY-MM-DD ; Date where deposit was executed |
+| interest_date | (float) APY interest expressed in decimal (6.5%, 4.3%) |
 
 ## Running the application
 

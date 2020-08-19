@@ -15,14 +15,14 @@ if __name__ == '__main__':
     parser.add_argument('testcase', metavar='N', nargs='+',
                         help='an integer for the accumulator')
     args = parser.parse_args()
-    print("args", args.testcase)
+    print("Runner args:", args.testcase)
 
     loader = unittest.TestLoader
     suite = unittest.TestSuite()
 
     for test in args.testcase:
         if test == "savings" or test == "saving" or test == "savings.py":
-            suite.addTest(unittest.makeSuite(test_loan.TestLoan))
+            suite.addTest(unittest.makeSuite(test_savings.TestSavings))
         if test == "loans" or test == "loan" or test == "loan.py":
             suite.addTest(unittest.makeSuite(test_loan.TestLoan))
         if test == "tools" or test == "tool" or test == "tools.py":
