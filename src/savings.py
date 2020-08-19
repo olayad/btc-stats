@@ -14,7 +14,7 @@ from exceptions import InitializationDataNotFound, InvalidData
 class Savings:
     input_file_df = None
     total_btc = 0
-    interest_history_cad = {}
+    interest_history_cad = {pd.Timestamp('2020-06-01'): 4.1}
 
 
 def init_savings():

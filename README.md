@@ -27,7 +27,7 @@ num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
 
 | CSV column   |Description|
 | ---------|-----------|
-| num      |(int) Consecutive counter used as index | 
+| num      |(int) Consecutive counter used as entry ID | 
 | type     |(int) type of CDP movement,|
 | |`0` new new loan|
 | |`1` collateral increase|
@@ -36,9 +36,9 @@ num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
 | |`4` closed loan|
 |wallet_address|(str) Bitcoin address used to deposit collateral|
 |coll_amount|(float) Amount of BTC increased/decreased by `type` movement|
-|start_date| (str) Format: YYYY-MM-DD ; Date loan became active|
+|start_date| (str) Format:`YYYY-MM-DD`; Date loan became active|
 |debt_cad|(float) Amount of CAD increased by `type` movement|
-|date_update| (str) Format: YYYY-MM-DD ; Date loan reflected `type` movement|
+|date_update| (str) Format:`YYYY-MM-DD`; Date loan reflected `type` movement|
 |admin_fee|(int) Fee charged at the start of loan|
 
 ### Savings file
@@ -49,16 +49,25 @@ To use your own data, create `/cdp-stats/data/savings.csv`.
 num,type,saving_amount_btc,date_movement,interest_rate
  ```
 
-| CSV column   |Description|
-| ---------|-----------|
-| num       |(int) Consecutive counter used as index | 
-| type      |(int) type of movement,|
-|           |`0` amount of BTC savings increased|
-|           |`1` amount of BTC savings decreased|
-|           |`2` interest rate change|
-| saving amount | (float) BTC amount |
-| date_movement | (str) Format: YYYY-MM-DD ; Date where deposit was executed |
-| interest_date | (float) APY interest expressed in decimal (6.5%, 4.3%) |
+|CSV column|Description   |
+|----------|--------------|
+|num       |(int) Consecutive counter used as entry ID  | 
+|type      |(int) type of movement,|
+|          |`0` amount of BTC savings increased|
+|          |`1` amount of BTC savings decreased|
+|          |`2` interest rate change|
+|amount        | (float) Used when type is `0` or `1`, specifies BTC amount increased or decreased in savings account |
+|date          | (str) Used for all `type` of movements, format: `YYYY-MM-DD`, specifies date when movement was executed |
+|interest_date | (float) APY interest expressed in decimal (6.5%, 4.3%, etc.) |
+
+In the following example, notice that If `type` movement is `0` or `1`, the `interest_rate` is not specified. If `type` movement corresponds to interest rate change (`2`), then `amount_btc` is not specified. 
+
+```
+num,type,amount_btc,date,interest_rate
+1,0,1.0,2020-08-01,
+2,1,1.0,2020-08-10,
+3,2,,2020-08-15,5.6
+```
 
 ## Running the application
 
