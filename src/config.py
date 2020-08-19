@@ -1,6 +1,7 @@
 TEST_MODE = 0
 LOANS_INPUT_FILE = '../data/loans.csv'
 SAVINGS_INPUT_FILE = '../data/savings.csv'
+INTEREST_INPUT_FILE = '../data/interest.csv'
 
 # TODO: change below to loan_daily_interest
 DAILY_INTEREST = 0.000329

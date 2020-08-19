@@ -8,35 +8,36 @@ import config as cfg
 from exceptions import InitializationDataNotFound, InvalidData
 # from price_data import PriceData
 
-
-
-
 class Savings:
-    input_file_df = None
+    savings_df = None
+    rates_df = None
     total_btc = 0
-    interest_history_cad = {pd.Timestamp('2020-06-01'): 4.1}
+    # interest_history_cad = {pd.Timestamp('2020-06-01'): 4.1}
 
 
-def init_savings():
-    Savings.input_file_df = load_input_file()
-    get_total_btc()
+def init_savings(rates_file='rates.csv'):
+    Savings.savings_df, Savings.rates_df = load_input_file(rates_file)
+    get_total_savings_btc()
 
 
-def load_input_file():
-    file = ''
+def load_input_file(rates_file):
+    savings_file = ''
+    print('[INFO] Initializing savings with files: ' + savings_file + ' - ' + rates_file)
     try:
-        file = './data/'+cfg.TEST_MODE if cfg.TEST_MODE else cfg.SAVINGS_INPUT_FILE
-        print('[INFO] Initializing savings with file: '+file)
-        df = pd.read_csv(file)
-    except FileNotFoundError:
-        print('[ERROR] Could not find file [{}]'.format(file))
+        savings_file = './data/'+cfg.TEST_MODE if cfg.TEST_MODE else cfg.SAVINGS_INPUT_FILE
+        rates_file = './data/'+rates_file
+        savings_df = pd.read_csv(savings_file)
+        rates_df = pd.read_csv(rates_file)
+    except FileNotFoundError as e:
+        print(f'[ERROR] Please check files exist: [{savings_file}, {rates_file}], {e}')
         raise InitializationDataNotFound
-    df.set_index('num', inplace=True)
-    return df
+    savings_df.set_index('id', inplace=True)
+    rates_df.set_index('id', inplace=True)
+    return savings_df, rates_df
 
 
-def get_total_btc():
-    for index, row in Savings.input_file_df.iterrows():
+def get_total_savings_btc():
+    for index, row in Savings.savings_df.iterrows():
         if row['amount_btc'] < 0 : raise InvalidData
         if row['type'] is cfg.INCREASE:
             Savings.total_btc += row['amount_btc']

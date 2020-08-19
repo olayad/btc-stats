@@ -22,28 +22,29 @@ class TestSavings(unittest.TestCase):
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', None)
         pd.set_option('display.max_colwidth', -1)
-    #
-    # def test_invalid_csv_file(self):
-    #     cfg.set_test_mode('savings_does_not_exist.csv')
-    #     self.assertRaises(exceptions.InitializationDataNotFound, savings.init_savings)
-    #
-    # def test_incorrect_file(self):
-    #     cfg.set_test_mode('savings_0.csv')
-    #     self.assertRaises(exceptions.InvalidData, savings.init_savings)
-    #
-    # def test_total_savings_btc(self):
-    #     cfg.set_test_mode('savings_1.csv')
-    #     savings.init_savings()
-    #     df = savings.Savings.input_file_df
-    #     self.assertEqual(savings.Savings.total_btc, 2.5, 'Should be 2.5')
-    #
-    def test_interest_rate_change(self):
-        cfg.set_test_mode('savings_2.csv')
-        savings.init_savings()
-        df = savings.Savings.input_file_df
-        print(df)
-        print(savings.Savings.interest_history_cad)
-        print(f'interest_history len:{len(savings.Savings.interest_history_cad)}')
+
+    def test_invalid_csv_file(self):
+        cfg.set_test_mode('savings_does_not_exist.csv')
+        self.assertRaises(exceptions.InitializationDataNotFound, savings.init_savings)
+
+    def test_incorrect_file(self):
+        cfg.set_test_mode('savings_0.csv')
+        self.assertRaises(exceptions.InvalidData, savings.init_savings, 'rates_0.csv')
+
+    def test_total_savings_btc(self):
+        cfg.set_test_mode('savings_1.csv')
+        savings.init_savings('rates_0.csv')
+        self.assertEqual(savings.Savings.total_btc, 1.5, 'Should be 1.5')
+
+    # def test_interest_rate_change(self):
+    #     cfg.set_test_mode('savings_2.csv')
+    #     savings.init_savings('rates_0.csv')
+    # savings_df = savings.Savings.savings_df
+    # rates_df = savings.Savings.rates_df
+    #     df = savings.Savings.savings_df
+    #     print(df)
+    #     print(savings.Savings.interest_history_cad)
+    #     print(f'interest_history len:{len(savings.Savings.interest_history_cad)}')
 
 if __name__ == '__main__':
     unittest.main()
