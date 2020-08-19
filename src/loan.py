@@ -6,7 +6,7 @@ import itertools
 
 import config as cfg
 import tools
-from exceptions import InitializationDataNotFound, InvalidLoanData
+from exceptions import InitializationDataNotFound, InvalidData
 from price_data import PriceData
 
 df_btcusd = PriceData().df_btcusd
@@ -187,7 +187,7 @@ def create_loan_instances():
 def new_loan_entry_is_valid(active_loans, csv_entry):
     for cdp in active_loans:
         if csv_entry['wallet_address'] == cdp.wallet_address:
-            raise InvalidLoanData('Trying to create a loan that already '
+            raise InvalidData('Trying to create a loan that already '
                                   'exists:{}'.format(cdp.wallet_address))
     return True
 

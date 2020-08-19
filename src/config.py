@@ -12,7 +12,9 @@ COLLATERAL_DECREASED = 2
 DEBT_CAD_INCREASED = 3
 CLOSED_LOAN = 4
 
-
+# Savings movement types
+INCREASE = 0
+DECREASE = 1
 
 def set_test_mode(test_case):
     global TEST_MODE

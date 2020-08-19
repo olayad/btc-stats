@@ -6,6 +6,6 @@ class InitializationDataNotFound(Exception):
     pass
 
 
-class InvalidLoanData(Exception):
+class InvalidData(Exception):
     pass
 

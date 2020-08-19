@@ -13,7 +13,7 @@ from config import set_test_mode, set_loans_input_file
 
 import tools
 from debt import Debt
-from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable, InvalidLoanData
+from exceptions import InitializationDataNotFound, ThirdPartyApiUnavailable, InvalidData
 from loan import Loan, get_loans, update_loans_with_current_price, get_cost_analysis, get_closed_loan_dates
 
 
@@ -40,7 +40,7 @@ except InitializationDataNotFound:
 except ThirdPartyApiUnavailable:
     print('[ERROR] Third party API not responding, try again later. Terminating execution.')
     sys.exit(1)
-except InvalidLoanData:
+except InvalidData:
     print('[ERROR] Invalid "loan.csv" file given. ')
     sys.exit(1)
 debt = Debt()

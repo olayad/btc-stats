@@ -27,9 +27,15 @@ class TestSavings(unittest.TestCase):
         cfg.set_test_mode('savings_does_not_exist.csv')
         self.assertRaises(exceptions.InitializationDataNotFound, savings.init_savings)
 
-    def test_total_savings_btc(self):
+    def test_incorrect_file(self):
         cfg.set_test_mode('savings_0.csv')
-        self.assertEqual(savings.get_total_btc(), 0, 'Should be 0')
+        self.assertRaises(exceptions.InvalidData, savings.init_savings)
+
+    def test_total_savings_btc(self):
+        cfg.set_test_mode('savings_1.csv')
+        savings.init_savings()
+        df = savings.Savings.input_file_df
+        self.assertEqual(savings.Savings.total_btc, 2.5, 'Should be 2.5')
 
 if __name__ == '__main__':
     unittest.main()

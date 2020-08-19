@@ -28,7 +28,7 @@ class TestLoan(unittest.TestCase):
 
     def test_invalid_loan_csv_data(self):
         cfg.set_test_mode('loans_0.csv')
-        self.assertRaises(exceptions.InvalidLoanData, loan.init_loans)
+        self.assertRaises(exceptions.InvalidData, loan.init_loans)
 
     def test_single_loan_no_collateral_updates(self):
         cfg.set_test_mode('loans_1.csv')

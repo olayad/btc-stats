@@ -1,2 +1,4 @@
-num,type,saving_amount_btc,date_movement,interest_rate
-1,0,1.0,2020-08-01,10.0,
+num,type,amount_btc,date,interest_rate
+1,0,1.0,2020-08-01,10.0
+2,0,1.0,2020-08-10,10.0
+3,0,0.5,2020-08-10,10.0
