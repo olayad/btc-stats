@@ -36,15 +36,18 @@ class TestSavings(unittest.TestCase):
         savings.init_savings('rates_0.csv')
         self.assertEqual(savings.Savings.total_btc, 1.5, 'Should be 1.5')
 
-    # def test_interest_rate_change(self):
-    #     cfg.set_test_mode('savings_2.csv')
-    #     savings.init_savings('rates_0.csv')
-    # savings_df = savings.Savings.savings_df
-    # rates_df = savings.Savings.rates_df
-    #     df = savings.Savings.savings_df
-    #     print(df)
-    #     print(savings.Savings.interest_history_cad)
-    #     print(f'interest_history len:{len(savings.Savings.interest_history_cad)}')
+    def test_interest_rate_no_change(self):
+        cfg.set_test_mode('savings_2.csv')
+        savings.init_savings('rates_0.csv')
+        savings_df = savings.Savings.savings_df
+        rates_df = savings.Savings.rates_df
+
+        #
+        #
+        # ya tengo el excel, falta crear la prueba basadoen los numeros del excelito
+        #
+        #
+        #
 
 if __name__ == '__main__':
     unittest.main()
