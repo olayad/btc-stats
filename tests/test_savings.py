@@ -16,7 +16,8 @@ import exceptions
 
 class TestSavings(unittest.TestCase):
     def setUp(self):
-        pass
+        # Resetting class variables between tests
+        savings.Savings.total_btc = 0
         # Show all rows/columns when pandas DF is printed
         pd.set_option('display.max_rows', None)
         pd.set_option('display.max_columns', None)
@@ -25,7 +26,7 @@ class TestSavings(unittest.TestCase):
 
     def test_invalid_csv_file(self):
         cfg.set_test_mode('savings_does_not_exist.csv')
-        self.assertRaises(exceptions.InitializationDataNotFound, savings.init_savings)
+        self.assertRaises(exceptions.InitializationDataNotFound, savings.init_savings, 'rates_0.csv')
 
     def test_incorrect_file(self):
         cfg.set_test_mode('savings_0.csv')
@@ -42,6 +43,9 @@ class TestSavings(unittest.TestCase):
         savings_df = savings.Savings.savings_df
         rates_df = savings.Savings.rates_df
 
+        print(savings_df)
+        print()
+        print(rates_df)
         #
         #
         # ya tengo el excel, falta crear la prueba basadoen los numeros del excelito

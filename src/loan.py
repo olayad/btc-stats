@@ -31,7 +31,7 @@ class Loan:
         self.id = self.counter
         Loan.counter += 1
 
-    def calculate_loan_stats(self):
+    def populate_stats(self):
         loan_start_date = pd.Timestamp(self.start_date)
         self.stats['date'] = df_btcusd[df_btcusd['Date'] >= loan_start_date]['Date']
         self.stats['btc_price_usd'] = df_btcusd[df_btcusd['Date'] >= loan_start_date]['Last']
@@ -150,7 +150,7 @@ def get_loans():
 def init_loans():
     Loan.input_file_df = load_input_file()
     Loan.actives = create_loan_instances()
-    for loan in Loan.actives: loan.calculate_loan_stats()
+    for loan in Loan.actives: loan.populate_stats()
     Loan.closed = archive_closed_loans(Loan.actives)
 
 
