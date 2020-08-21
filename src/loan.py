@@ -63,18 +63,18 @@ class Loan:
         return borrowed_cad_df
 
     def populate_collateral_amounts(self):
-        collateral_values = []
+        collateral_df = []
         dates_which_had_collateral_update = list(self.collateral_history.keys())
         curr_collateral = self.current_collateral
         for index, row in self.stats.iterrows():
-            collateral_values.append(curr_collateral)
+            collateral_df.append(curr_collateral)
             if row['date'] in dates_which_had_collateral_update:
                 if self.collateral_history[row['date']]['type'] is cfg.COLLATERAL_INCREASED:
                     curr_collateral -= self.collateral_history[row['date']]['amount']
                 else:
                     curr_collateral += self.collateral_history[row['date']]['amount']
                 dates_which_had_collateral_update.pop()
-        return collateral_values
+        return collateral_df
 
     def calculate_interest(self):
         df_interest = []

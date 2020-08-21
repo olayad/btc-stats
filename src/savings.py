@@ -50,7 +50,7 @@ def get_total_savings_btc():
             Savings.balance_btc -= row['amount_btc']
             Savings.account_balance_history_btc.update({pd.Timestamp(row['date']): -row['amount_btc']})
 
-    # print(f'account_balance_history_btc:{Savings.account_balance_history_btc}')
+    print(f'account_balance_history_btc:{Savings.account_balance_history_btc}')
 
 
 def calculate_stats():
@@ -68,7 +68,16 @@ def populate_balances_btc():
     balance_btc_df = []
     dates_which_had_balance_update = list(Savings.account_balance_history_btc.keys())
     curr_balance = Savings.balance_btc
+    print(f'Savings.balance_btc:{Savings.balance_btc}')
     for index, row in Savings.stats.iterrows():
-        balance_btc_df.append(curr_balance)
-        # if row['date'] in dates_which_had_balance_update:
-            # curr_balance -=
+        if row['date'] in dates_which_had_balance_update:
+            print(f'date in list, {row["date"]}, {Savings.account_balance_history_btc[row["date"]]} ')
+            if Savings.account_balance_history_btc[row['date']] > 0:
+                curr_balance += Savings.account_balance_history_btc[row['date']]
+            else:
+                curr_balance -= Savings.account_balance_history_btc[row['date']]
+            balance_btc_df.append(curr_balance)
+        else:
+            balance_btc_df.append(curr_balance)
+    print(f'balance_btc_df:{balance_btc_df}')
+    return balance_btc_df
