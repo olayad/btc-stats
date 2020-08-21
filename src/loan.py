@@ -31,6 +31,7 @@ class Loan:
         self.id = self.counter
         Loan.counter += 1
 
+    # TODO: Rename below 'calculate_stats'
     def populate_stats(self):
         loan_start_date = pd.Timestamp(self.start_date)
         self.stats['date'] = df_btcusd[df_btcusd['Date'] >= loan_start_date]['Date']
@@ -51,15 +52,15 @@ class Loan:
         return False
 
     def populate_debt_cad(self):
-        borrowed_cad_values = []
+        borrowed_cad_df = []
         dates_which_had_borrowed_cad_update = list(self.debt_history_cad.keys())
         curr_borrowed = self.current_debt_cad
         for index, row in self.stats.iterrows():
-            borrowed_cad_values.append(curr_borrowed)
+            borrowed_cad_df.append(curr_borrowed)
             if row['date'] in dates_which_had_borrowed_cad_update:
                 curr_borrowed -= self.debt_history_cad[row['date']]
                 dates_which_had_borrowed_cad_update.pop()
-        return borrowed_cad_values
+        return borrowed_cad_df
 
     def populate_collateral_amounts(self):
         collateral_values = []
