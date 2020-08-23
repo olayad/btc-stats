@@ -77,11 +77,11 @@ To use your own data, create `/cdp-stats/data/rates.csv`, such file will provide
 |CSV column|Description   |
 |----------|--------------|
 |id       |(int) Consecutive counter used as entry ID  | 
-|date          | (str) format: `YYYY-MM-DD`, specifies date when new interest rate is reflected |
-|interest_date | (float) APY interest expressed in decimal (6.5%, 4.3%, etc.) |
+|date      | (str) format: `YYYY-MM-DD`, specifies date when new interest rate is reflected |
+|APY       | (float) Annual Percentage Yield, interest expressed in decimal (6.5%, 4.3%, etc.) |
 
 ```
-id,date,interest_rate
+id,date,apy
 1,2020-06-01,4.1    
 2,2020-08-01,6.5
 ```
