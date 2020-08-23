@@ -41,6 +41,9 @@ def load_input_file(rates_file):
         raise InitializationDataNotFound
     savings_input_df.set_index('id', inplace=True)
     rates_input_df.set_index('id', inplace=True)
+    savings_input_df.sort_values('date', ascending=True, inplace=True)
+    rates_input_df.sort_values('date', ascending=True, inplace=True)
+
     return savings_input_df, rates_input_df
 
 
@@ -68,18 +71,18 @@ def get_total_savings_btc():
 def calculate_stats():
     account_start_date = Savings.account_input_df["date"].iloc[0]
     Savings.stats['date'] = df_btcusd[df_btcusd['Date'] >= account_start_date]['Date']
-    Savings.stats['rate_daily'] = calculate_daily_rates()
+    # Savings.stats['rate_daily'] = calculate_daily_rates()
     # Savings.stats['balance_btc'] = populate_balances_btc()
 
-    # print(df_btcusd.head())
-    # print(f'account start date: {Savings.account_input_df["date"].iloc[0]}')
-    print(f'\n***Savings stats***')
-    print(Savings.stats)
 
-
-def calculate_daily_rates():
-    print(f'rate_daily_history: {Savings.rate_daily_history}')
-    print(f'rate_daily:{Savings.rate_daily}')
+# def calculate_daily_rates():
+#     print(f'rate_daily_history: {Savings.rate_daily_history}')
+#     print(f'rate_daily:{Savings.rate_daily}')
+#     dates_with_rate_update = list(Savings.rate_daily_history.keys())
+#     curr_rate = Savings.rate_daily
+#     for index, row in Savings.stats.iterrrows():
+#         if row['date'] in dates_with_rate_update:
+#             print(f'date in list, {row["date"]}, {Savings.daily_history[row["date"]]}')
 
 
 # TODO: change below to dates_with_balance_update
