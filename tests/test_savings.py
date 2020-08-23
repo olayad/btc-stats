@@ -38,31 +38,23 @@ class TestSavings(unittest.TestCase):
         self.assertEqual(savings.Savings.rates_input_df.iloc[0]['date'], '2020-06-01', 'Incorrect sort order')
         self.assertEqual(savings.Savings.account_input_df.iloc[0]['date'], '2020-08-01', 'Incorrect sort order')
 
-        print(f'\n***Stats df***')
-        print(savings.Savings.stats)
+    def test_balance_btc(self):
+        cfg.set_test_mode('savings_2.csv')
+        savings.init_savings('rates_0.csv')
+        self.assertEqual(savings.Savings.balance_btc, 10.5, 'Should be 10.5')
 
-        print(f'\n***Rates df***')
-        print(savings.Savings.rates_input_df)
-        print(f'\n***Savings df**')
-        print(savings.Savings.account_input_df)
-
-    # def test_total_savings_btc(self):
-    #     cfg.set_test_mode('savings_1.csv')
-    #     savings.init_savings('rates_0.csv')
-    #     self.assertEqual(savings.Savings.total_btc, 1.5, 'Should be 1.5')
 
     # def test_interest_rate_no_change(self):
     #     cfg.set_test_mode('savings_2.csv')
     #     savings.init_savings('rates_0.csv')
     #     savings_df = savings.Savings.account_input_df
     #     rates_df = savings.Savings.rates_input_df
-    #
-    #     print('\n***Savings_df***')
-    #     print(savings_df)
-    #
-    #     print('\n***rates_df***')
-    #     print(rates_df)
 
+        # print(savings.Savings.stats)
+        # print(f'\n***Rates df***')
+        # print(savings.Savings.rates_input_df)
+        # print(f'\n***Savings df**')
+        # print(savings.Savings.account_input_df)
 
 if __name__ == '__main__':
     unittest.main()
