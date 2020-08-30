@@ -30,8 +30,8 @@ class TestSavings(unittest.TestCase):
         pd.set_option('display.max_colwidth', -1)
 
     def test_invalid_csv_file(self):
-            cfg.set_test_mode('savings_does_not_exist.csv')
-            self.assertRaises(exceptions.InitializationDataNotFound, savings.init_savings, 'rates_0.csv')
+        cfg.set_test_mode('savings_does_not_exist.csv')
+        self.assertRaises(exceptions.InitializationDataNotFound, savings.init_savings, 'rates_0.csv')
 
     def test_invalid_savings_data(self):
         cfg.set_test_mode('savings_0.csv')
@@ -65,6 +65,17 @@ class TestSavings(unittest.TestCase):
         self.assertEqual(stats[stats['date'] == '2020-08-01']['daily_rate'].values[0], 0.003288, 'Wrong daily rate')
         self.assertEqual(stats[stats['date'] == '2020-08-10']['daily_rate'].values[0], 0.006575, 'Wrong daily rate')
 
+
+    def test_movements_btc(self):
+        cfg.set_test_mode('savings_4.csv')
+        savings.init_savings('rates_3.csv')
+        stats = savings.Savings.stats
+        savings_df = savings.Savings.account_input_df
+        rates_df = savings.Savings.rates_input_df
+        self.assertEqual(stats[stats['date'] == '2020-08-01']['movements_btc'].values[0], 10, 'Wrong movevent btc')
+        self.assertEqual(stats[stats['date'] == '2020-08-10']['movements_btc'].values[0], 1, 'Wrong movevent btc')
+        self.assertEqual(stats[stats['date'] == '2020-08-15']['movements_btc'].values[0], -5, 'Wrong movevent btc')
+        self.assertEqual(stats[stats['date'] == '2020-08-20']['movements_btc'].values[0], 2, 'Wrong movevent btc')
         # print(savings.Savings.stats)
         # print(f'\n***Rates df***')
         # print(rates_df)

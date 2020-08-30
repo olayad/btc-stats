@@ -69,36 +69,29 @@ def calculate_stats():
     account_start_date = Savings.account_input_df["date"].iloc[0]
     Savings.stats['date'] = df_btcusd[df_btcusd['Date'] >= account_start_date]['Date']
     Savings.stats['daily_rate'] = calculate_daily_rates()
-    # Savings.stats['balance_btc'] = populate_balances_btc()
+    Savings.stats['movements_btc'] = populate_movements_btc()
 
 
 def calculate_daily_rates():
     daily_rate_df = []
     dates_with_rate_update = list(Savings.daily_rate_history.keys())
     first_rate_update = list(Savings.daily_rate_history.items())[0][1]
-    curr_rate = first_rate_update
+    curr = first_rate_update
     for index, row in Savings.stats[::-1].iterrows():
         if row['date'] in dates_with_rate_update:
-            curr_rate = Savings.daily_rate_history[row['date']]
-        daily_rate_df.append(curr_rate)
+            curr = Savings.daily_rate_history[row['date']]
+        daily_rate_df.append(curr)
     return daily_rate_df[::-1]
 
-# TODO: change below to dates_with_balance_update
-# def populate_balances_btc():
-#     balance_btc_df = []
-#     dates_which_had_balance_update = list(Savings.account_balance_history_btc.keys())
-#     # curr_balance = Savings.balance_btc
-#     curr_balance = 0
-#     print(f'Savings.balance_btc:{Savings.balance_btc}')
-#     for index, row in Savings.stats[::-1].iterrows():
-#         if row['date'] in dates_which_had_balance_update:
-#             print(f'date in list, {row["date"]}, {Savings.account_balance_history_btc[row["date"]]} ')
-#             if Savings.account_balance_history_btc[row['date']] > 0:
-#                 curr_balance += Savings.account_balance_history_btc[row['date']]
-#             else:
-#                 curr_balance -= Savings.account_balance_history_btc[row['date']]
-#             balance_btc_df.append(curr_balance)
-#         else:
-#             balance_btc_df.append(curr_balance)
-#     print(f'balance_btc_df:{balance_btc_df}')
-#     return balance_btc_df[::-1]
+
+def populate_movements_btc():
+    movements_btc_df = []
+    dates_with_balance_update = list(Savings.account_balance_history_btc.keys())
+    curr = 0
+    for index, row in Savings.stats[::-1].iterrows():
+        if row['date'] in dates_with_balance_update:
+            curr += Savings.account_balance_history_btc[row['date']]
+            movements_btc_df.append(Savings.account_balance_history_btc[row['date']])
+        else:
+            movements_btc_df.append(0)
+    return movements_btc_df[::-1]
