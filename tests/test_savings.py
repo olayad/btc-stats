@@ -65,17 +65,30 @@ class TestSavings(unittest.TestCase):
         self.assertEqual(stats[stats['date'] == '2020-08-01']['daily_rate'].values[0], 0.003288, 'Wrong daily rate')
         self.assertEqual(stats[stats['date'] == '2020-08-10']['daily_rate'].values[0], 0.006575, 'Wrong daily rate')
 
-
     def test_movements_btc(self):
         cfg.set_test_mode('savings_4.csv')
-        savings.init_savings('rates_3.csv')
+        savings.init_savings('rates_2.csv')
         stats = savings.Savings.stats
         savings_df = savings.Savings.account_input_df
         rates_df = savings.Savings.rates_input_df
-        self.assertEqual(stats[stats['date'] == '2020-08-01']['movements_btc'].values[0], 10, 'Wrong movevent btc')
-        self.assertEqual(stats[stats['date'] == '2020-08-10']['movements_btc'].values[0], 1, 'Wrong movevent btc')
-        self.assertEqual(stats[stats['date'] == '2020-08-15']['movements_btc'].values[0], -5, 'Wrong movevent btc')
-        self.assertEqual(stats[stats['date'] == '2020-08-20']['movements_btc'].values[0], 2, 'Wrong movevent btc')
+        self.assertEqual(stats[stats['date'] == '2020-08-01']['movements_btc'].values[0], 10, 'Wrong movement btc')
+        self.assertEqual(stats[stats['date'] == '2020-08-05']['movements_btc'].values[0], 1, 'Wrong movement btc')
+        self.assertEqual(stats[stats['date'] == '2020-08-15']['movements_btc'].values[0], -5, 'Wrong movement btc')
+        self.assertEqual(stats[stats['date'] == '2020-08-20']['movements_btc'].values[0], 2.123456789, 'Wrong movement btc')
+
+    def test_balance_btc(self):
+        cfg.set_test_mode('savings_4.csv')
+        savings.init_savings('rates_2.csv')
+        stats = savings.Savings.stats
+        savings_df = savings.Savings.account_input_df
+        rates_df = savings.Savings.rates_input_df
+        self.assertEqual(stats[stats['date'] == '2020-08-01']['balance_btc'].values[0], 10.000000, 'Wrong balance')
+        self.assertEqual(stats[stats['date'] == '2020-08-02']['balance_btc'].values[0], 10.032880, 'Wrong balance')
+        self.assertEqual(stats[stats['date'] == '2020-08-05']['balance_btc'].values[0], 11.132170, 'Wrong balance')
+        self.assertEqual(stats[stats['date'] == '2020-08-06']['balance_btc'].values[0], 11.168773, 'Wrong balance')
+        self.assertEqual(stats[stats['date'] == '2020-08-11']['balance_btc'].values[0], 11.428115, 'Wrong balance')
+        self.assertEqual(stats[stats['date'] == '2020-08-15']['balance_btc'].values[0], 6.731652, 'Wrong balance')
+        self.assertEqual(stats[stats['date'] == '2020-08-20']['balance_btc'].values[0], 9.079342, 'Wrong balance')
         # print(savings.Savings.stats)
         # print(f'\n***Rates df***')
         # print(rates_df)

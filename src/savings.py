@@ -70,6 +70,7 @@ def calculate_stats():
     Savings.stats['date'] = df_btcusd[df_btcusd['Date'] >= account_start_date]['Date']
     Savings.stats['daily_rate'] = calculate_daily_rates()
     Savings.stats['movements_btc'] = populate_movements_btc()
+    Savings.stats['balance_btc'] = calculate_balance()
 
 
 def calculate_daily_rates():
@@ -95,3 +96,16 @@ def populate_movements_btc():
         else:
             movements_btc_df.append(0)
     return movements_btc_df[::-1]
+
+
+def calculate_balance():
+    balance_btc_df = []
+    curr_balance = 0
+    prev_balance = 0
+    for index, row in Savings.stats[::-1].iterrows():
+        interest = prev_balance * row['daily_rate']
+        curr_balance = round(interest + prev_balance + row['movements_btc'], 6)
+        prev_balance = curr_balance
+        balance_btc_df.append(curr_balance)
+    return balance_btc_df[::-1]
+
