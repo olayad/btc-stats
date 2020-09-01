@@ -5,14 +5,10 @@ import unittest
 import sys
 import os
 sys.path.append('../src')
-# from datetime import datetime, timedelta
 import pandas as pd
 import config as cfg
 import savings
-# import loan
 import exceptions
-# import tools
-# from debt import Debt
 
 
 class TestSavings(unittest.TestCase):
@@ -43,7 +39,7 @@ class TestSavings(unittest.TestCase):
         self.assertEqual(savings.Savings.rates_input_df.iloc[0]['date'], '2020-06-01', 'Incorrect sort order')
         self.assertEqual(savings.Savings.account_input_df.iloc[0]['date'], '2020-08-01', 'Incorrect sort order')
 
-    def test_balance_btc(self):
+    def test_movements_btc(self):
         cfg.set_test_mode('savings_2.csv')
         savings.init_savings('rates_0.csv')
         self.assertEqual(savings.Savings.balance_btc, 10.5, 'Should be 10.5')
@@ -54,23 +50,23 @@ class TestSavings(unittest.TestCase):
         stats = savings.Savings.stats
         # savings_df = savings.Savings.account_input_df
         # rates_df = savings.Savings.rates_input_df
-        self.assertEqual(stats.iloc[0]['daily_rate'], 0.003288, 'Wrong daily interest rate')
+        self.assertEqual(stats.iloc[0]['daily_rate'], 0.00328767, 'Wrong daily interest rate')
 
     def test_interest_rate_change(self):
         cfg.set_test_mode('savings_3.csv')
         savings.init_savings('rates_2.csv')
         stats = savings.Savings.stats
-        savings_df = savings.Savings.account_input_df
-        rates_df = savings.Savings.rates_input_df
-        self.assertEqual(stats[stats['date'] == '2020-08-01']['daily_rate'].values[0], 0.003288, 'Wrong daily rate')
-        self.assertEqual(stats[stats['date'] == '2020-08-10']['daily_rate'].values[0], 0.006575, 'Wrong daily rate')
+        # savings_df = savings.Savings.account_input_df
+        # rates_df = savings.Savings.rates_input_df
+        self.assertEqual(stats[stats['date'] == '2020-08-01']['daily_rate'].values[0], 0.00328767, 'Wrong daily rate')
+        self.assertEqual(stats[stats['date'] == '2020-08-10']['daily_rate'].values[0], 0.00657534, 'Wrong daily rate')
 
     def test_movements_btc(self):
         cfg.set_test_mode('savings_4.csv')
         savings.init_savings('rates_2.csv')
         stats = savings.Savings.stats
-        savings_df = savings.Savings.account_input_df
-        rates_df = savings.Savings.rates_input_df
+        # savings_df = savings.Savings.account_input_df
+        # rates_df = savings.Savings.rates_input_df
         self.assertEqual(stats[stats['date'] == '2020-08-01']['movements_btc'].values[0], 10, 'Wrong movement btc')
         self.assertEqual(stats[stats['date'] == '2020-08-05']['movements_btc'].values[0], 1, 'Wrong movement btc')
         self.assertEqual(stats[stats['date'] == '2020-08-15']['movements_btc'].values[0], -5, 'Wrong movement btc')
@@ -80,20 +76,28 @@ class TestSavings(unittest.TestCase):
         cfg.set_test_mode('savings_4.csv')
         savings.init_savings('rates_2.csv')
         stats = savings.Savings.stats
-        savings_df = savings.Savings.account_input_df
-        rates_df = savings.Savings.rates_input_df
+        # savings_df = savings.Savings.account_input_df
+        # rates_df = savings.Savings.rates_input_df
         self.assertEqual(stats[stats['date'] == '2020-08-01']['balance_btc'].values[0], 10.000000, 'Wrong balance')
-        self.assertEqual(stats[stats['date'] == '2020-08-02']['balance_btc'].values[0], 10.032880, 'Wrong balance')
-        self.assertEqual(stats[stats['date'] == '2020-08-05']['balance_btc'].values[0], 11.132170, 'Wrong balance')
-        self.assertEqual(stats[stats['date'] == '2020-08-06']['balance_btc'].values[0], 11.168773, 'Wrong balance')
-        self.assertEqual(stats[stats['date'] == '2020-08-11']['balance_btc'].values[0], 11.428115, 'Wrong balance')
-        self.assertEqual(stats[stats['date'] == '2020-08-15']['balance_btc'].values[0], 6.731652, 'Wrong balance')
-        self.assertEqual(stats[stats['date'] == '2020-08-20']['balance_btc'].values[0], 9.079342, 'Wrong balance')
-        # print(savings.Savings.stats)
-        # print(f'\n***Rates df***')
-        # print(rates_df)
-        # print(f'\n***Savings df**')
-        # print(savings_df)
+        self.assertEqual(stats[stats['date'] == '2020-08-02']['balance_btc'].values[0], 10.0328767, 'Wrong balance')
+        self.assertEqual(stats[stats['date'] == '2020-08-05']['balance_btc'].values[0], 11.13215675, 'Wrong balance')
+        self.assertEqual(stats[stats['date'] == '2020-08-06']['balance_btc'].values[0], 11.16875561, 'Wrong balance')
+        self.assertEqual(stats[stats['date'] == '2020-08-11']['balance_btc'].values[0], 11.42809351, 'Wrong balance')
+        self.assertEqual(stats[stats['date'] == '2020-08-15']['balance_btc'].values[0], 6.7316455, 'Wrong balance')
+        self.assertEqual(stats[stats['date'] == '2020-08-20']['balance_btc'].values[0], 9.07934621, 'Wrong balance')
+
+    # def test_production(self):
+    #     cfg.set_test_mode('savings_5.csv')
+    #     savings.init_savings('rates_3.csv')
+    #     stats = savings.Savings.stats
+    #     savings_df = savings.Savings.account_input_df
+    #     rates_df = savings.Savings.rates_input_df
+    #     print(savings.Savings.stats)
+    #     print(f'\n***Rates df***')
+    #     print(rates_df)
+    #     print(f'\n***Savings df**')
+    #     print(savings_df)
+
 
 if __name__ == '__main__':
     unittest.main()

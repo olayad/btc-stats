@@ -6,6 +6,8 @@ import config as cfg
 from exceptions import InitializationDataNotFound, InvalidData
 from price_data import PriceData
 
+DECIMALS = 8
+
 df_btcusd = PriceData().df_btcusd
 
 
@@ -49,7 +51,7 @@ def load_input_file(rates_file):
 def load_rates():
     daily_interest_rate = 0
     for index, row in Savings.rates_input_df.iterrows():
-        daily_interest_rate = round((row['apy']/365)/100, 6)
+        daily_interest_rate = round((row['apy']/365)/100, DECIMALS)
         Savings.daily_rate_history.update({pd.Timestamp(row['date']): daily_interest_rate})
     return daily_interest_rate
 
@@ -104,7 +106,7 @@ def calculate_balance():
     prev_balance = 0
     for index, row in Savings.stats[::-1].iterrows():
         interest = prev_balance * row['daily_rate']
-        curr_balance = round(interest + prev_balance + row['movements_btc'], 6)
+        curr_balance = round(interest + prev_balance + row['movements_btc'], DECIMALS)
         prev_balance = curr_balance
         balance_btc_df.append(curr_balance)
     return balance_btc_df[::-1]
