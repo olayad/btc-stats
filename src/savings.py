@@ -135,16 +135,7 @@ def get_monthly_interest_gains(year=datetime.datetime.now().year, month=datetime
     stats = Savings.stats
     start_date = pd.Timestamp(year=year, month=month, day=1)
     end_date = pd.Timestamp(year=year, month=month, day=monthrange(year, month)[1])
-    print(f'monthrange {monthrange(year,month)[1]}')
-    print(f'\tgetting interest gains for: {month}')
-
     df = stats[(stats['date'] >= start_date) & (stats['date'] <= end_date)]
-    print('start balance:')
-    print()
-    print(f'end balance: ')
-    print(df)
     movements = df['movements_btc'].sum() - df['movements_btc'].iloc[-1]
-    print(f'movements:{movements}')
     gains = round(((df["balance_btc"].iloc[0] - df['balance_btc'].iloc[-1]) - movements), 8)
-    print(f'gains: {gains}')
     return gains
