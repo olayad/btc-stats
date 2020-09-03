@@ -143,8 +143,8 @@ def get_monthly_interest_gains(year=datetime.datetime.now().year, month=datetime
     print()
     print(f'end balance: ')
     print(df)
-    movements = df['movements_btc'].sum()
+    movements = df['movements_btc'].sum() - df['movements_btc'].iloc[-1]
     print(f'movements:{movements}')
-    gains = df['balance_btc'].iloc[-1] - df["balance_btc"].iloc[0] - movements
+    gains = round(((df["balance_btc"].iloc[0] - df['balance_btc'].iloc[-1]) - movements), 8)
     print(f'gains: {gains}')
     return gains
