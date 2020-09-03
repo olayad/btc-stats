@@ -11,22 +11,23 @@ from price_data import PriceData
 
 df_btcusd = PriceData().df_btcusd
 
+# TODO: move to config
 DECIMALS = 8
-MONTH={
-        'ALL':0,
-        'JAN':1,
-        'FEB':2,
-        'MAR':3,
-        'APR':4,
-        'MAY':5,
-        'JUN':6,
-        'JUL':7,
-        'AUG':8,
-        'SEP':9,
-        'OCT':10,
-        'NOV':11,
-        'DEC':12
-}
+# MONTH={
+#         'ALL':0,
+#         'JAN':1,
+#         'FEB':2,
+#         'MAR':3,
+#         'APR':4,
+#         'MAY':5,
+#         'JUN':6,
+#         'JUL':7,
+#         'AUG':8,
+#         'SEP':9,
+#         'OCT':10,
+#         'NOV':11,
+#         'DEC':12
+# }
 
 class Savings:
     account_input_df = None
@@ -131,14 +132,19 @@ def calculate_balance():
 def get_monthly_interest_gains(year=datetime.datetime.now().year, month=datetime.datetime.now().month):
     assert(0 < month < 13)
     assert(year >= datetime.datetime.now().year)
-    print()
-    print(month)
-    print(f'getting savings for: {month}')
     stats = Savings.stats
     start_date = pd.Timestamp(year=year, month=month, day=1)
     end_date = pd.Timestamp(year=year, month=month, day=monthrange(year, month)[1])
     print(f'monthrange {monthrange(year,month)[1]}')
+    print(f'\tgetting interest gains for: {month}')
 
-    df = stats[(stats['date'] > start_date) & (stats['date'] < end_date)]
+    df = stats[(stats['date'] >= start_date) & (stats['date'] <= end_date)]
+    print('start balance:')
+    print()
+    print(f'end balance: ')
     print(df)
-
+    movements = df['movements_btc'].sum()
+    print(f'movements:{movements}')
+    gains = df['balance_btc'].iloc[-1] - df["balance_btc"].iloc[0] - movements
+    print(f'gains: {gains}')
+    return gains

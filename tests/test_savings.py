@@ -87,12 +87,12 @@ class TestSavings(unittest.TestCase):
     #     self.assertEqual(stats[stats['date'] == '2020-08-20']['balance_btc'].values[0], 9.07934621, 'Wrong balance')
     #
     def test_get_monthly_balance(self):
-        cfg.set_test_mode('savings_5.csv')
-        savings.init_savings('rates_3.csv')
+        cfg.set_test_mode('savings_4.csv')
+        savings.init_savings('rates_2.csv')
         stats = savings.Savings.stats
         # savings_df = savings.Savings.account_input_df
         # rates_df = savings.Savings.rates_input_df
-        savings.get_monthly_interest_gains()
+        savings.get_monthly_interest_gains(month=8)
         # self.assertEqual(stats[stats['date'] == '2020-08-01']['balance_btc'].values[0], 10.000000, 'Wrong balance')
 
 
