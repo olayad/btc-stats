@@ -1,22 +1,38 @@
 #!/usr/bin/env/ python3
 
+from calendar import monthrange
+import datetime
 import collections
 import pandas as pd
 import config as cfg
 from exceptions import InitializationDataNotFound, InvalidData
 from price_data import PriceData
 
-DECIMALS = 8
 
 df_btcusd = PriceData().df_btcusd
 
+DECIMALS = 8
+MONTH={
+        'ALL':0,
+        'JAN':1,
+        'FEB':2,
+        'MAR':3,
+        'APR':4,
+        'MAY':5,
+        'JUN':6,
+        'JUL':7,
+        'AUG':8,
+        'SEP':9,
+        'OCT':10,
+        'NOV':11,
+        'DEC':12
+}
 
 class Savings:
     account_input_df = None
     rates_input_df = None
     stats = pd.DataFrame()
-    # Todo: remove account from below
-    account_balance_history_btc = collections.OrderedDict()    # {date: +amount increased / -amount decreased}
+    balance_history_btc = collections.OrderedDict()    # {date: +amount increased / -amount decreased}
     balance_btc = 0
     daily_rate_history = collections.OrderedDict()  # {date: daily interest rate}
     daily_rate = 0
@@ -61,10 +77,10 @@ def get_total_savings_btc():
         if row['amount_btc'] < 0: raise InvalidData
         if row['type'] is cfg.INCREASE:
             Savings.balance_btc += row['amount_btc']
-            Savings.account_balance_history_btc.update({pd.Timestamp(row['date']): row['amount_btc']})
+            Savings.balance_history_btc.update({pd.Timestamp(row['date']): row['amount_btc']})
         if row['type'] is cfg.DECREASE:
             Savings.balance_btc -= row['amount_btc']
-            Savings.account_balance_history_btc.update({pd.Timestamp(row['date']): -row['amount_btc']})
+            Savings.balance_history_btc.update({pd.Timestamp(row['date']): -row['amount_btc']})
 
 
 def calculate_stats():
@@ -89,12 +105,12 @@ def calculate_daily_rates():
 
 def populate_movements_btc():
     movements_btc_df = []
-    dates_with_balance_update = list(Savings.account_balance_history_btc.keys())
+    dates_with_balance_update = list(Savings.balance_history_btc.keys())
     curr = 0
     for index, row in Savings.stats[::-1].iterrows():
         if row['date'] in dates_with_balance_update:
-            curr += Savings.account_balance_history_btc[row['date']]
-            movements_btc_df.append(Savings.account_balance_history_btc[row['date']])
+            curr += Savings.balance_history_btc[row['date']]
+            movements_btc_df.append(Savings.balance_history_btc[row['date']])
         else:
             movements_btc_df.append(0)
     return movements_btc_df[::-1]
@@ -110,4 +126,19 @@ def calculate_balance():
         prev_balance = curr_balance
         balance_btc_df.append(curr_balance)
     return balance_btc_df[::-1]
+
+
+def get_monthly_interest_gains(year=datetime.datetime.now().year, month=datetime.datetime.now().month):
+    assert(0 < month < 13)
+    assert(year >= datetime.datetime.now().year)
+    print()
+    print(month)
+    print(f'getting savings for: {month}')
+    stats = Savings.stats
+    start_date = pd.Timestamp(year=year, month=month, day=1)
+    end_date = pd.Timestamp(year=year, month=month, day=monthrange(year, month)[1])
+    print(f'monthrange {monthrange(year,month)[1]}')
+
+    df = stats[(stats['date'] > start_date) & (stats['date'] < end_date)]
+    print(df)
 
