@@ -5,7 +5,8 @@ import requests
 
 from exceptions import ThirdPartyApiUnavailable
 
-quandl_url = 'https://www.quandl.com/api/v3/datasets/BCHARTS/KRAKENUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
+# quandl_url = 'https://www.quandl.com/api/v3/datasets/BCHARTS/KRAKENUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
+quandl_url = 'https://www.quandl.com/api/v3/datasets/BITFINEX/BTCUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
 bitfinex_url = 'https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD'
 bankofcanada_url = 'https://www.bankofcanada.ca/valet/observations/FXCADUSD/json?'
 
@@ -65,6 +66,7 @@ def strip_payload(payload):
 
 
 def get_fx_cadusd_rates(start_date, end_date=None):
+    # TODO: Remove case where end_date args is not None
     if end_date is None:
         json_response = call_fx_api(start_date, end_date=str(datetime.date.today()))
         observations = format_payload(json_response)
@@ -101,6 +103,10 @@ def fill_missing_day_rates(rates):
         curr = curr + datetime.timedelta(days=1)
         if curr > end_date:
             break
+
+
+    # Todo: gotta append the date to result, in order to check discrepancy with statas
+
     return result
 
 

@@ -17,5 +17,6 @@ def load_input_file():
         print('[ERROR] Could not find file [/data/btcusd.csv].')
         raise InitializationDataNotFound
     df_btcusd['Date'] = pd.to_datetime(df_btcusd['Date'])
-    df_btcusd['Last'] = pd.to_numeric(df_btcusd['Close'])
+    # df_btcusd['Last'] = pd.to_numeric(df_btcusd['Close'])
+    df_btcusd['Last'] = pd.to_numeric(df_btcusd['Last'])
     return df_btcusd

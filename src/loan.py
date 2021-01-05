@@ -36,8 +36,12 @@ class Loan:
         loan_start_date = pd.Timestamp(self.start_date)
         self.stats['date'] = df_btcusd[df_btcusd['Date'] >= loan_start_date]['Date']
         self.stats['btc_price_usd'] = df_btcusd[df_btcusd['Date'] >= loan_start_date]['Last']
-        fx_rates = tools.get_fx_cadusd_rates(str(self.start_date))
-        if self.exchange_is_one_day_ahead_from_price_data(fx_rates): fx_rates.pop(0)
+
+        end_date = self.stats['date'].iloc[0].strftime("%Y-%m-%d")
+        fx_rates = tools.get_fx_cadusd_rates(str(self.start_date), str(end_date))
+
+        # fx_rates = tools.get_fx_cadusd_rates(str(self.start_date))
+        # if self.exchange_is_one_day_ahead_from_price_data(fx_rates): fx_rates.pop(0)
         self.stats['fx_cadusd'] = fx_rates
         self.stats['btc_price_cad'] = [round(row['btc_price_usd'] / float(row['fx_cadusd']), 1) for _, row in self.stats.iterrows()]
         self.stats['debt_cad'] = self.populate_debt_cad()
@@ -104,6 +108,8 @@ class Loan:
         return df_earliest_date != date_to_update
 
     def append_new_row_to_stats(self, date_to_update, btc_price_usd):
+        # TODO: Below, should always include end date
+
         fx_rate = float(tools.get_fx_cadusd_rates(datetime.datetime.now().strftime('%Y-%m-%d'))[0])
         btc_price_cad = round(btc_price_usd / fx_rate, 1)
         interest_cad = self.calculate_new_row_interest()
@@ -119,6 +125,8 @@ class Loan:
         self.stats = pd.concat([new_row, self.stats], sort=True).reset_index(drop=True)
 
     def update_row_prices(self, date_to_update, btc_price_usd):
+        # TODO: Below, should always include end date
+
         fx_rate = float(tools.get_fx_cadusd_rates(datetime.datetime.now().strftime('%Y-%m-%d'))[0])
         btc_price_cad = round(btc_price_usd / fx_rate, 1)
         self.stats.loc[self.stats['date'] == date_to_update, 'fx_cadusd'] = fx_rate
