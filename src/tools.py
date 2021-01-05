@@ -2,13 +2,14 @@ import datetime
 import json
 import pytz
 import requests
-
 from exceptions import ThirdPartyApiUnavailable
 
-# quandl_url = 'https://www.quandl.com/api/v3/datasets/BCHARTS/KRAKENUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
-quandl_url = 'https://www.quandl.com/api/v3/datasets/BITFINEX/BTCUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
+
 bitfinex_url = 'https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD'
 bankofcanada_url = 'https://www.bankofcanada.ca/valet/observations/FXCADUSD/json?'
+quandl_url = 'https://www.quandl.com/api/v3/datasets/BCHARTS/KRAKENUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
+## Data incomplete from bitfinex, e.g, 2020-08-12 is not included
+# quandl_url = 'https://www.quandl.com/api/v3/datasets/BITFINEX/BTCUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
 
 # TODO: Move below to config
 AVG_FXCADUSD = 0.80  # Last updated June, 2020
@@ -103,10 +104,6 @@ def fill_missing_day_rates(rates):
         curr = curr + datetime.timedelta(days=1)
         if curr > end_date:
             break
-
-
-    # Todo: gotta append the date to result, in order to check discrepancy with statas
-
     return result
 
 
