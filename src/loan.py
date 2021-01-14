@@ -9,14 +9,15 @@ import tools
 from exceptions import InitializationDataNotFound, InvalidData
 from price_data import PriceData
 
-df_btcusd = PriceData().df_btcusd
+# df_btcusd = PriceData().df_btcusd
 
 
 class Loan:
     counter = 1
     actives = []
     closed = []
-    input_file_df = None
+    df_input_loans = None
+    df_btcusd = None
 
     def __init__(self, start_date, wallet_address, admin_fee):
         self.stats = pd.DataFrame()
@@ -34,8 +35,8 @@ class Loan:
     # TODO: Rename below 'calculate_stats'
     def populate_stats(self):
         loan_start_date = pd.Timestamp(self.start_date)
-        self.stats['date'] = df_btcusd[df_btcusd['Date'] >= loan_start_date]['Date']
-        self.stats['btc_price_usd'] = df_btcusd[df_btcusd['Date'] >= loan_start_date]['Last']
+        self.stats['date'] = self.df_btcusd[self.df_btcusd['Date'] >= loan_start_date]['Date']
+        self.stats['btc_price_usd'] = self.df_btcusd[self.df_btcusd['Date'] >= loan_start_date]['Last']
         fx_rates = tools.get_fx_cadusd_rates(str(self.start_date))
         if self.exchange_is_one_day_ahead_from_price_data(fx_rates): fx_rates.pop(0)
         self.stats['fx_cadusd'] = fx_rates
@@ -143,13 +144,10 @@ class Loan:
                 f'start_date:{self.start_date}, closed_date:{self.closed_date}')
 
 
-def get_loans():
-    if len(Loan.actives) == 0: init_loans()
-    return Loan.actives
-
-
 def init_loans():
-    Loan.input_file_df = load_input_file()
+    Loan.df_btcusd = df_btcusd = PriceData().df_btcusd
+    #Todo: rename below to df_input_loans
+    Loan.df_input_loans = load_input_file()
     Loan.actives = create_loan_instances()
     for loan in Loan.actives: loan.populate_stats()
     Loan.closed = archive_closed_loans(Loan.actives)
@@ -170,7 +168,7 @@ def load_input_file():
 
 def create_loan_instances():
     active_loans = []
-    for index, row in Loan.input_file_df.iterrows():
+    for index, row in Loan.df_input_loans.iterrows():
         if row['type'] is cfg.NEW_LOAN:
             if new_loan_entry_is_valid(active_loans, row):
                 active_loans.append(instantiate_new_loan(row))
@@ -183,6 +181,11 @@ def create_loan_instances():
         if row['type'] is cfg.CLOSED_LOAN:
             update_closed_loan_date(active_loans, row)
     return active_loans
+
+
+def get_loans():
+    if len(Loan.actives) == 0: init_loans()
+    return Loan.actives
 
 
 def new_loan_entry_is_valid(active_loans, csv_entry):
