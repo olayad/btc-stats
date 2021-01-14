@@ -10,11 +10,11 @@ import tools
 class TestTools(unittest.TestCase):
 
     def test_fx_rates(self):
-        resp = tools.get_fx_cadusd_rates(start_date='2020-07-29', end_date='2021-01-04')
+        resp = tools.get_historic_fx_cadusd_rates(start_date='2020-07-29', end_date='2021-01-04')
         self.assertEqual(len(resp), 160, 'Should be 160')
 
     def test_get_rates_all_week_days(self):
-        resp = tools.get_fx_cadusd_rates(start_date='2019-11-04', end_date='2019-11-08')
+        resp = tools.get_historic_fx_cadusd_rates(start_date='2019-11-04', end_date='2019-11-08')
         self.assertEqual(len(resp), 5, 'Should be 5')
         self.assertEqual(float(resp[4]), 0.7606, "Should be rate of 0.7606")
         self.assertEqual(float(resp[3]), 0.7603, "Should be rate of 0.7603")
@@ -24,29 +24,29 @@ class TestTools(unittest.TestCase):
 
     def test_get_rates_holiday_first_day(self):
         # Nov 11th is holiday
-        resp = tools.get_fx_cadusd_rates(start_date='2019-11-11', end_date='2019-11-14')
+        resp = tools.get_historic_fx_cadusd_rates(start_date='2019-11-11', end_date='2019-11-14')
         self.assertEqual(len(resp), 4, 'Should be 4')
 
     def test_get_rates_only_holiday(self):
         # Nov 11th is holiday
-        resp = tools.get_fx_cadusd_rates(start_date='2019-11-11', end_date='2019-11-11')
+        resp = tools.get_historic_fx_cadusd_rates(start_date='2019-11-11', end_date='2019-11-11')
         self.assertEqual(len(resp), 1, 'Should be 1')
         self.assertEqual(resp[0], tools.AVG_FXCADUSD, 'Should be equal to AVG_FXCADUSD')
 
     def test_get_rates_weekend_between(self):
-        resp = tools.get_fx_cadusd_rates(start_date='2019-10-28', end_date='2019-11-04')
+        resp = tools.get_historic_fx_cadusd_rates(start_date='2019-10-28', end_date='2019-11-04')
         self.assertEqual(len(resp), 8, 'Should be 8')
 
     def test_get_rates_weekend_start(self):
-        resp = tools.get_fx_cadusd_rates(start_date='2019-11-02', end_date='2019-11-09')
+        resp = tools.get_historic_fx_cadusd_rates(start_date='2019-11-02', end_date='2019-11-09')
         self.assertEqual(len(resp), 8, 'Should be 8')
 
     def test_get_rates_weekend_end(self):
-        resp = tools.get_fx_cadusd_rates(start_date='2019-11-08', end_date='2019-11-10')
+        resp = tools.get_historic_fx_cadusd_rates(start_date='2019-11-08', end_date='2019-11-10')
         self.assertEqual(len(resp), 3, 'Should be 3')
 
     def test_get_rates_only_weekend(self):
-        resp = tools.get_fx_cadusd_rates(start_date='2019-11-09', end_date='2019-11-10')
+        resp = tools.get_historic_fx_cadusd_rates(start_date='2019-11-09', end_date='2019-11-10')
         self.assertEqual(len(resp), 2, 'Should be 2')
 
 

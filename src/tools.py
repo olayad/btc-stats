@@ -1,4 +1,5 @@
 import datetime
+# from datetime import datetime
 import json
 import pytz
 import requests
@@ -66,41 +67,45 @@ def strip_payload(payload):
     return {i['d']: i['FXCADUSD']['v'] for i in payload['observations']}
 
 
-def get_fx_cadusd_rates(start_date, end_date=None):
+def get_historic_fx_cadusd_rates(dates_btcusd, start_date, end_date=None):
     # TODO: Remove case where end_date args is not None
     if end_date is None:
         json_response = call_fx_api(start_date, end_date=str(datetime.date.today()))
         observations = format_payload(json_response)
-        api_data = [{'start_date': start_date, 'end_date': get_current_date_for_exchange_api()}, observations]
+        fx_data = [{'start_date': start_date, 'end_date': get_current_date_for_exchange_api()}, observations]
     else:
         json_response = call_fx_api(start_date, end_date)
         observations = format_payload(json_response)
-        api_data = [{'start_date': start_date, 'end_date': end_date}, observations]
-    fx_rates = fill_missing_day_rates(api_data)
+        fx_data = [{'start_date': start_date, 'end_date': end_date}, observations]
+    fx_rates = fill_missing_day_rates(fx_data, dates_btcusd)
     return fx_rates[::-1]
 
 
-def fill_missing_day_rates(rates):
-    # Bitcoin never closes its branch, so need to make up for banks missing rates
-    # data (i.e. holidays and weekends).
-    # For weekdays, Bank of Canada will have a matching entry with corresponding rate.
-    # For this scenario, the data given is appended to result.
-    # When an entry is missing from the Bank of Canada response (holiday/weekend),
-    # the algorithm will use the last previous rate added to result.
-    # For edge case where the date range requested is only all holidays or weekends,
-    # a global variable (AVG_FXCADUSD) is used, which is updated manually.
+def get_curr_fx_cadusd_rate():
+    start_date = datetime.datetime.now().strftime('%Y-%m-%d')
+    json_response = call_fx_api(start_date, end_date=str(datetime.date.today()))
+    rate = format_payload(json_response)
+    return list(rate.values())[0]
+
+
+def fill_missing_day_rates(rates, dates_btcusd):
     global AVG_FXCADUSD
     start_date = datetime.datetime.strptime(rates[0]['start_date'], '%Y-%m-%d')
     end_date = datetime.datetime.strptime(rates[0]['end_date'], '%Y-%m-%d')
     result = []
     curr = start_date
     result_has_data = False
+    dates_btcusd = [j.to_pydatetime() for i,j in dates_btcusd.iteritems()]
     while True:
-        if curr.strftime('%Y-%m-%d') in rates[1].keys():
-            result.append(rates[1][curr.strftime('%Y-%m-%d')])
-            result_has_data = True
-        else:  # FX shows no day data, duplicate last observation or use avg.
-            result.append(result[-1]) if result_has_data else result.append(AVG_FXCADUSD)
+        if curr in dates_btcusd:
+            if curr.strftime('%Y-%m-%d') in rates[1].keys():
+                result.append(rates[1][curr.strftime('%Y-%m-%d')])
+                result_has_data = True
+            else:  # FX shows no day data, duplicate last observation or use avg.
+                result.append(result[-1]) if result_has_data else result.append(AVG_FXCADUSD)
+        else:
+            # print(f'Skipping curr:{curr}, not in dates_btcusd')
+            pass
         curr = curr + datetime.timedelta(days=1)
         if curr > end_date:
             break
