@@ -145,7 +145,8 @@ class Loan:
 
 
 def init_loans():
-    Loan.df_btcusd = df_btcusd = PriceData().df_btcusd
+    # Todo: any way to make below less ugly?
+    Loan.df_btcusd = PriceData().df_btcusd
     #Todo: rename below to df_input_loans
     Loan.df_input_loans = load_input_file()
     Loan.actives = create_loan_instances()
