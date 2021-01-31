@@ -32,7 +32,6 @@ class TestLoan(unittest.TestCase):
 
         loan.init_loans()
 
-        # Just finished adding hook for running custom btcusd file. I need to create a function that will sanitize, the btcusd file, adding rows where lefts are missing
 
 
 

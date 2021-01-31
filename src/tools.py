@@ -39,7 +39,7 @@ def call_exchange_api():
     return json.loads(response.text)[0][1]
 
 
-def get_fx_rates(start_date, end_date):
+def call_fx_api(start_date, end_date):
     response = None
     try:
         response = requests.get(bankofcanada_url+'start_date='+start_date +
@@ -67,11 +67,11 @@ def strip_payload(payload):
 
 def get_fx_cadusd_rates(start_date, end_date=None):
     if end_date is None:
-        json_response = get_fx_rates(start_date, end_date=str(datetime.date.today()))
+        json_response = call_fx_api(start_date, end_date=str(datetime.date.today()))
         observations = format_payload(json_response)
         api_data = [{'start_date': start_date, 'end_date': get_current_date_for_exchange_api()}, observations]
     else:
-        json_response = get_fx_rates(start_date, end_date)
+        json_response = call_fx_api(start_date, end_date)
         observations = format_payload(json_response)
         api_data = [{'start_date': start_date, 'end_date': end_date}, observations]
     fx_rates = fill_missing_day_rates(api_data)
