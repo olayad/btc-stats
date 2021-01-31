@@ -4,8 +4,8 @@ SAVINGS_INPUT_FILE = '../data/savings.csv'
 INTEREST_INPUT_FILE = '../data/interest.csv'
 BTCUSD_INPUT_FILE = '../data/btcusd.csv'
 
-# TODO: change below to loan_daily_interest
-DAILY_INTEREST = 0.000329
+LOAN_DAILY_INTEREST = 0.000329
+AVG_FX_CADUSD = 0.80  # Last updated June, 2020
 
 # Loan movement types
 NEW_LOAN = 0
@@ -17,6 +17,14 @@ CLOSED_LOAN = 4
 # Savings movement types
 INCREASE = 0
 DECREASE = 1
+
+# Savings constants
+DECIMALS = 8
+
+# APIs
+quandl_url = 'https://www.quandl.com/api/v3/datasets/BCHARTS/KRAKENUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
+bitfinex_url = 'https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD'
+boc_url = 'https://www.bankofcanada.ca/valet/observations/FXCADUSD/json?'
 
 
 def set_test_mode(test_case):

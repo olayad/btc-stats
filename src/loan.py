@@ -9,8 +9,6 @@ import tools
 from exceptions import InitializationDataNotFound, InvalidData
 from price_data import PriceData
 
-# df_btcusd = PriceData().df_btcusd
-
 
 class Loan:
     counter = 1
@@ -81,7 +79,7 @@ class Loan:
         df_interest = []
         interest = 0
         for _, row in self.stats[::-1].iterrows():
-            daily_interest = cfg.DAILY_INTEREST * row['debt_cad']
+            daily_interest = cfg.LOAN_DAILY_INTEREST * row['debt_cad']
             interest += daily_interest
             df_interest.insert(0, round(interest, 2))
         return df_interest
@@ -98,7 +96,7 @@ class Loan:
             self.append_new_row_to_stats(date_to_update, btc_price_usd)
         else:
             self.update_row_prices(date_to_update, btc_price_usd)
-            self.update_row_ltv(date_to_update, btc_price_usd)
+            self.update_row_ltv(date_to_update)
 
     def date_to_update_is_not_in_stats(self, date_to_update):
         df_earliest_date = self.stats.iloc[0]['date']
@@ -126,7 +124,7 @@ class Loan:
         self.stats.loc[self.stats['date'] == date_to_update, 'btc_price_usd'] = btc_price_usd
         self.stats.loc[self.stats['date'] == date_to_update, 'btc_price_cad'] = btc_price_cad
 
-    def update_row_ltv(self, date_to_update, btc_price_usd):
+    def update_row_ltv(self, date_to_update):
         btc_price_cad = self.stats.loc[self.stats['date'] == date_to_update, 'btc_price_cad']
         coll_amount = self.stats.loc[self.stats['date'] == date_to_update, 'coll_amount']
         debt_cad = self.stats.loc[self.stats['date'] == date_to_update, 'debt_cad']
@@ -136,7 +134,7 @@ class Loan:
 
     def calculate_new_row_interest(self):
         interest_accumulated = self.stats.iloc[0]['interest_cad']
-        return round(interest_accumulated + (cfg.DAILY_INTEREST * self.current_debt_cad), 2)
+        return round(interest_accumulated + (cfg.LOAN_DAILY_INTEREST * self.current_debt_cad), 2)
 
     def __str__(self):
         return (f'ID:{self.id:0>2d}, current_debt:${self.current_debt_cad:6d}, '
@@ -145,16 +143,14 @@ class Loan:
 
 
 def init_loans():
-    # Todo: any way to make below less ugly?
-    Loan.df_btcusd = PriceData().df_btcusd
-    #Todo: rename below to df_input_loans
-    Loan.df_input_loans = load_input_file()
+    Loan.df_btcusd = PriceData().get_btcusd_df()
+    Loan.df_input_loans = load_loans_input_file()
     Loan.actives = create_loan_instances()
     for loan in Loan.actives: loan.populate_stats()
     Loan.closed = archive_closed_loans(Loan.actives)
 
 
-def load_input_file():
+def load_loans_input_file():
     file = ''
     try:
         file = './data/'+cfg.TEST_MODE if cfg.TEST_MODE else cfg.LOANS_INPUT_FILE
@@ -192,8 +188,7 @@ def get_loans():
 def new_loan_entry_is_valid(active_loans, csv_entry):
     for cdp in active_loans:
         if csv_entry['wallet_address'] == cdp.wallet_address:
-            raise InvalidData('Trying to create a loan that already '
-                                  'exists:{}'.format(cdp.wallet_address))
+            raise InvalidData('Trying to create a loan that already exists:{}'.format(cdp.wallet_address))
     return True
 
 
@@ -220,7 +215,7 @@ def update_debt_cad_records(loans, csv_entry):
             cdp.current_debt_cad += csv_entry['debt_cad']
 
 
-def update_loans_with_current_price(date_given: object = 0, price_given: object = 0) -> object:
+def update_loans_with_current_price(price_given=None, date_given=None):
     date = tools.get_current_date_for_exchange_api() if not date_given else date_given
     price = price_given if price_given else tools.get_usd_price()
     for cdp in Loan.actives: cdp.update_stats_with_current_price(pd.Timestamp(date), float(price))
@@ -295,5 +290,4 @@ def get_closed_loan_dates():
 def calculate_ltv(debt_cad, interest_cad, coll_amount, btc_price_cad):
     return round((debt_cad + interest_cad) / (coll_amount * btc_price_cad), 2)
     # TODO: change ltv to percentage in app.py LTV graph
-    # return round(((debt_cad + interest_cad) / (coll_amount * btc_price_cad) * 100), 2)
 

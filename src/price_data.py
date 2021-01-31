@@ -4,11 +4,14 @@ import config as cfg
 import pandas as pd
 import datetime
 
+
 class PriceData:
     def __init__(self):
         self.df_btcusd = load_btcusd_csv()
-        self.df_btcusd = sanitize_pricedata(self.df_btcusd)
-        print(self.df_btcusd)
+        self.df_btcusd = fill_missing_days(self.df_btcusd)
+
+    def get_btcusd_df(self):
+        return self.df_btcusd
 
 
 def load_btcusd_csv():
@@ -23,8 +26,9 @@ def load_btcusd_csv():
     return df_btcusd
 
 
-def sanitize_pricedata(df):
+def fill_missing_days(df):
     df2 = pd.DataFrame()
+    expected = 0
     for index, row in df.iterrows():
         if index == 0:
             expected = row['Date'] - datetime.timedelta(days=1)
@@ -34,7 +38,6 @@ def sanitize_pricedata(df):
             prev = df.iloc[index]
             df2_index = index
             while curr != expected:
-                print(f'Whoops, expected date:{expected}, missing, found:{curr}')
                 line = pd.DataFrame({'Close': [prev['Close']],
                                      'Date': [expected],
                                      'High': [prev['High']],
@@ -47,13 +50,13 @@ def sanitize_pricedata(df):
                 df2 = pd.concat([df.iloc[:df2_index],
                                  line,
                                  df.iloc[df2_index:]]).reset_index(drop=True)
-                expected = expected - datetime.timedelta(days=1)
-                df2_index += 1
                 df = df2
-                print()
-
+                df2_index += 1
+                expected = expected - datetime.timedelta(days=1)
         expected = row['Date'] - datetime.timedelta(days=1)
-
-        print()
-
     return df
+
+
+
+
+

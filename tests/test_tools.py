@@ -5,6 +5,7 @@ import os
 import unittest
 sys.path.append(os.path.realpath('../src'))
 import tools
+import config as cfg
 
 
 class TestTools(unittest.TestCase):
@@ -12,12 +13,12 @@ class TestTools(unittest.TestCase):
     def test_fx_rates(self):
         resp = tools.get_fx_cadusd_rates(start_date='2020-01-26', end_date='2020-01-31')
         self.assertEqual(len(resp), 6, 'Should be 6')
-        self.assertEqual(float(resp[5]), 0.753, "Should be rate of 0.753")
-        self.assertEqual(float(resp[4]), 0.7586, "Should be rate of 0.7586")
-        self.assertEqual(float(resp[3]), 0.7588, "Should be rate of 0.7588")
-        self.assertEqual(float(resp[2]), 0.7578, "Should be rate of 0.7578")
-        self.assertEqual(float(resp[1]), 0.7566, "Should be rate of 0.7566")
         self.assertEqual(float(resp[0]), 0.7557, "Should be rate of 0.7557")
+        self.assertEqual(float(resp[1]), 0.7566, "Should be rate of 0.7566")
+        self.assertEqual(float(resp[2]), 0.7578, "Should be rate of 0.7578")
+        self.assertEqual(float(resp[3]), 0.7588, "Should be rate of 0.7588")
+        self.assertEqual(float(resp[4]), 0.7586, "Should be rate of 0.7586")
+        self.assertEqual(float(resp[5]), cfg.AVG_FX_CADUSD, "Should be rate of "+str(cfg.AVG_FX_CADUSD))
 
     def test_get_rates_all_week_days(self):
         resp = tools.get_fx_cadusd_rates(start_date='2019-11-04', end_date='2019-11-08')
@@ -37,7 +38,7 @@ class TestTools(unittest.TestCase):
         # Nov 11th is holiday
         resp = tools.get_fx_cadusd_rates(start_date='2019-11-11', end_date='2019-11-11')
         self.assertEqual(len(resp), 1, 'Should be 1')
-        self.assertEqual(resp[0], tools.AVG_FXCADUSD, 'Should be equal to AVG_FXCADUSD')
+        self.assertEqual(resp[0], cfg.AVG_FX_CADUSD, 'Should be equal to AVG_FXCADUSD')
 
     def test_get_rates_weekend_between(self):
         resp = tools.get_fx_cadusd_rates(start_date='2019-10-28', end_date='2019-11-04')
