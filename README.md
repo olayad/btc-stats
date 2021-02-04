@@ -10,11 +10,6 @@ to calculate BTC prices in CAD.
 ## Prerequisites
 
 + Clone this repository and install `requirements.txt`.
-
-+ This program uses two files for loan and savings inputs.
-  + Loan sample file provided at (`/cdp-stats/data/loan-sample.csv`). 
-  #TODO: Create sample file
-  + Savings sample file provided at (`/cdp-stats/data/savings-sample.csv`). 
   
 
 ### Loan file
@@ -42,49 +37,7 @@ num,type,wallet_address,coll_amount,start_date,debt_cad,date_update,admin_fee
 |admin_fee|(int) Fee charged at the start of loan|
 
 
-
-#TODO: Replace num for id 
-
-
-
-### Savings file
-
-To use your own data, create `/cdp-stats/data/savings.csv`, such file will provide information of the BTC savings account movements.
-
-```
-num,type,amount_btc,date
- ```
-
-|CSV column|Description   |
-|----------|--------------|
-|id        |(int) Consecutive counter used as entry ID  | 
-|type      |(int) type of movement,|
-|          |`0` amount of BTC savings increased|
-|          |`1` amount of BTC savings decreased|
-|amount_btc     | (float) Used when type is `0` or `1`, specifies BTC amount increased or decreased in savings account |
-|date           | (str) Used for all `type` of movements, format: `YYYY-MM-DD`, specifies date when movement was executed |
-
-```
-id,type,amount_btc,date
-1,0,1.0,2020-08-01
-2,1,1.0,2020-08-10
-```
-
-### Interest Rates file
-
-To use your own data, create `/cdp-stats/data/rates.csv`, such file will provide information on the APY interest rates offered by the savings account.
-    
-|CSV column|Description   |
-|----------|--------------|
-|id       |(int) Consecutive counter used as entry ID  | 
-|date      | (str) format: `YYYY-MM-DD`, specifies date when new interest rate is reflected |
-|APY       | (float) Annual Percentage Yield, interest expressed in decimal (6.5%, 4.3%, etc.) |
-
-```
-id,date,apy
-1,2020-06-01,4.1    
-2,2020-08-01,6.5
-```
++ Loan sample file provided at (`/cdp-stats/data/loan-sample.csv`).
 
 ## Running the application
 

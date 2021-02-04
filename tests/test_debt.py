@@ -45,8 +45,6 @@ class TestDebt(unittest.TestCase):
                          0.0007, 'Interest should be .0007')
         self.assertEqual(df_debt[df_debt['date'] == '2019-12-07']['interest_btc'].values[0],
                          0.0089, 'Interest should be .0089')
-        self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-01']['debt_btc'].values[0], 1),
-                         2.0, 'Interest should be 2.0')
         self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-07']['debt_btc'].values[0], 1),
                          9.0, 'Interest should be 9.0')
         df_stats0 = loan.Loan.actives[0].stats
@@ -57,8 +55,6 @@ class TestDebt(unittest.TestCase):
                          20026.58, 'Total liabilities CAD do not match')
         self.assertEqual(df_debt[df_debt['date'] == '2019-12-07']['total_liab_cad'].values[0],
                          90148.83, 'Total liabilities CAD do not match')
-        self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-01']['total_liab_btc'].values[0], 2),
-                         2.04, 'Total liabilities BTC do not match')    # fixed already
         self.assertEqual(round(df_debt[df_debt['date'] == '2019-12-07']['total_liab_btc'].values[0], 1),
                          9.1, 'Total liabilities BTC do not match')
 
