@@ -1,6 +1,5 @@
 TEST_MODE = 0
 LOANS_INPUT_FILE = '../data/loans.csv'
-SAVINGS_INPUT_FILE = '../data/savings.csv'
 INTEREST_INPUT_FILE = '../data/interest.csv'
 BTCUSD_INPUT_FILE = '../data/btcusd.csv'
 
@@ -14,12 +13,6 @@ COLLATERAL_DECREASED = 2
 DEBT_CAD_INCREASED = 3
 CLOSED_LOAN = 4
 
-# Savings movement types
-INCREASE = 0
-DECREASE = 1
-
-# Savings constants
-DECIMALS = 8
 
 # APIs
 quandl_url = 'https://www.quandl.com/api/v3/datasets/BCHARTS/KRAKENUSD.csv?api_key=yynH4Pnq-X7AhiFsFdEa'
