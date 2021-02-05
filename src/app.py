@@ -75,11 +75,16 @@ app.layout = html.Div([
     ])
 ])
 
+############################
+#### Terminal summary ######
+############################
 total_coll_in_custody = 0
 for loan in Loan.actives:
     total_coll_in_custody += loan.current_collateral
 print(f'#################################################################')
-print(f'Total collateral held in custody by Ledn: {total_coll_in_custody}')
+print(f'Total collateral held by third parties: {total_coll_in_custody}')
+############################
+
 
 @app.callback(Output('btc_price', 'children'),
               [Input('interval_price', 'n_intervals')])
