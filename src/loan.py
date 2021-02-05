@@ -256,41 +256,18 @@ def get_cost_analysis():
                                  cdp.stats.iloc[-1]['interest_cad'] +
                                  cdp.admin_fee, 4)
         curr_debt = round(cdp.stats.iloc[0]['debt_cad'] + cdp.stats.iloc[0]['interest_cad'] + cdp.admin_fee, 4)
-
         loan_id.append(str(cdp.id)+'- $'+str(cdp.current_debt_cad))
         start_cost_btc1.append(round(start_total_debt / cdp.stats.iloc[-1]['btc_price_cad'], 4))
         curr_cost_btc1.append(round(curr_debt / cdp.stats.iloc[0]['btc_price_cad'], 4))
         delta_percent.append(round((((curr_cost_btc1[-1] * 100) / start_cost_btc1[-1]) - 100), 2))
         delta_btc.append(round(curr_cost_btc1[-1] - start_cost_btc1[-1], 4))
-
     loan_id.append('Totals')
     start_cost_btc1.append(round(sum(start_cost_btc1), 4))
     curr_cost_btc1.append(round(sum(curr_cost_btc1), 4))
     delta_percent.append(round(sum(delta_percent)/len(delta_percent),4))
     delta_btc.append(round(sum(delta_btc), 4))
-
-    # totals.update({'change_btc': round(sum(delta_btc),4)})
     return {'loan_id': loan_id, 'start_cost': start_cost_btc1, 'curr_cost': curr_cost_btc1, 'delta_percent': delta_percent, 'delta_btc': delta_btc }
 
-
-# def get_cost_analysis():
-#     diff_percentage, diff_btc, loan_id = [], [], []
-#     for cdp in Loan.actives:
-#         start_total_debt = round(cdp.stats.iloc[-1]['debt_cad'] +
-#                                  cdp.stats.iloc[-1]['interest_cad'] +
-#                                  cdp.admin_fee, 4)
-#         start_cost_btc = round(start_total_debt / cdp.stats.iloc[-1]['btc_price_cad'], 4)
-#         end_total_debt = round(cdp.stats.iloc[0]['debt_cad'] + cdp.stats.iloc[0]['interest_cad'] + cdp.admin_fee, 4)
-#         end_cost_btc = round(end_total_debt / cdp.stats.iloc[0]['btc_price_cad'], 4)
-#         loan_id.append(str(cdp.id)+'- $'+str(cdp.current_debt_cad))
-#         diff_btc.append(round(end_cost_btc - start_cost_btc, 4))
-#         percent_change = round((((end_cost_btc * 100) / start_cost_btc) - 100), 2)
-#         diff_percentage.append("Start cost: "+str(start_cost_btc) +
-#                                " btc<br>Current cost: "+str(end_cost_btc) +
-#                                " btc<br>Change: " + str(percent_change) + "%")
-#     loan_id.append("Total")
-#     diff_btc.append(round(sum(diff_btc), 4))
-#     return {"loan_id": loan_id, "diff_btc": diff_btc, "diff_percentage": diff_percentage}
 
 def update_closed_loan_date(actives, csv_entry):
     for cdp in actives:
