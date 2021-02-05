@@ -180,17 +180,20 @@ def update_graph_cost_analysis():
 
 
 def build_graph_cost_analysis(cost_data):
-    data = []
-    red = 'rgb(255,65,54)'
-    grn = 'rgb(61,153,112)'
-    colors = [red if bar >= 0 else grn for bar in cost_data['diff_btc']]
-    trace = go.Bar(x=cost_data['loan_id'],
-                   y=cost_data['diff_btc'],
-                   hovertext=cost_data['diff_percentage'],
-                   name='BTC',
-                   marker={'color': colors})
-    data.append(trace)
-    layout = go.Layout(title='Loan Cost Analysis',
+    annotation = ['Percent change: {}%'.format(p) for p in cost_data['delta_percent']]
+    trace1 = go.Bar(x=cost_data['loan_id'],
+                    y=cost_data['start_cost'],
+                    hovertext=annotation,
+                    name='Start cost (BTC)',
+                    marker_color='lightgrey')
+    trace2 = go.Bar(x=cost_data['loan_id'],
+                    y=cost_data['curr_cost'],
+                    hovertext=annotation,
+                    name='Curr cost (BTC)',
+                    marker_color='lightskyblue')
+
+    data = [trace1, trace2]
+    layout = go.Layout(title='Cost Analysis - USD Loan',
                        xaxis={'type': 'category'},
                        yaxis_title='BTC')
     return {'data': data, 'layout': layout}

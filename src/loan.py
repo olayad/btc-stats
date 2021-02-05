@@ -263,8 +263,14 @@ def get_cost_analysis():
         delta_percent.append(round((((curr_cost_btc1[-1] * 100) / start_cost_btc1[-1]) - 100), 2))
         delta_btc.append(round(curr_cost_btc1[-1] - start_cost_btc1[-1], 4))
 
-    totals.update({'change_btc': round(sum(delta_btc),4)})
-    return {'loan_id': loan_id, 'start_cost': start_cost_btc1, 'curr_cost': curr_cost_btc1, 'delta_percent': delta_percent, 'delta btc': delta_btc, 'totals': totals}
+    loan_id.append('Totals')
+    start_cost_btc1.append(round(sum(start_cost_btc1), 4))
+    curr_cost_btc1.append(round(sum(curr_cost_btc1), 4))
+    delta_percent.append(round(sum(delta_percent)/len(delta_percent),4))
+    delta_btc.append(round(sum(delta_btc), 4))
+
+    # totals.update({'change_btc': round(sum(delta_btc),4)})
+    return {'loan_id': loan_id, 'start_cost': start_cost_btc1, 'curr_cost': curr_cost_btc1, 'delta_percent': delta_percent, 'delta_btc': delta_btc }
 
 
 # def get_cost_analysis():
